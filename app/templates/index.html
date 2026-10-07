@@ -5,4 +5,61 @@
     <h1 id="page-title" class="display-5 fw-bold">EcoValdivia</h1>
     <p class="lead">Sistema inteligente de apoyo al reciclaje ciudadano</p>
 </section>
+
+<p class="text-secondary">Los puntos identificados como demostración contienen ubicaciones, horarios y estados ilustrativos; no son información oficial.</p>
+
+<form method="get" action="{{ url_for('public.index') }}" class="row g-3 align-items-end mb-4">
+    <div class="col-sm-8 col-md-6">
+        <label for="material" class="form-label">Filtrar por material</label>
+        <select name="material" id="material" class="form-select">
+            <option value="">Todos los materiales</option>
+            {% for material in materiales %}
+            <option value="{{ material.id }}" {% if material.id == material_id %}selected{% endif %}>{{ material.nombre }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-success">Filtrar</button>
+        <a href="{{ url_for('public.index') }}" class="btn btn-outline-secondary">Limpiar</a>
+    </div>
+</form>
+
+{% if error_filtro %}
+<p class="alert alert-warning" role="alert">{{ error_filtro }}</p>
+{% elif not puntos %}
+<p class="alert alert-info" role="status">{% if material_id %}No hay puntos activos que acepten el material seleccionado.{% else %}No hay puntos de reciclaje activos disponibles.{% endif %}</p>
+{% endif %}
+
+<div class="row g-4">
+{% for punto in puntos %}
+    <div class="col-12 col-lg-6">
+        <article class="card h-100">
+            <div class="card-body">
+                <h2 class="h4 card-title">{{ punto.nombre }}</h2>
+                <p>{{ punto.direccion }}</p>
+                <h3 class="h6">Materiales aceptados</h3>
+                <ul>
+                    {% for material in punto.materiales|sort(attribute='nombre') %}
+                    <li><strong>{{ material.nombre }}</strong>{% if material.instrucciones %}: {{ material.instrucciones }}{% endif %}</li>
+                    {% else %}<li>Sin materiales registrados.</li>{% endfor %}
+                </ul>
+                <h3 class="h6">Horarios</h3>
+                <ul>
+                    {% for horario in punto.horarios|sort(attribute='hora_inicio')|sort(attribute='dia_semana') %}
+                    <li>{{ dias_semana[horario.dia_semana] }}: {{ horario.hora_inicio.strftime('%H:%M') }}–{{ horario.hora_fin.strftime('%H:%M') }}</li>
+                    {% else %}<li>Sin horarios registrados.</li>{% endfor %}
+                </ul>
+                <h3 class="h6">Contenedores</h3>
+                {% for contenedor in punto.contenedores|selectattr('activo')|sort(attribute='codigo') %}
+                <div class="border rounded p-3 mb-2">
+                    <p class="mb-1"><strong>{{ contenedor.codigo }}</strong> · {{ contenedor.estado }}</p>
+                    <p class="mb-1">Llenado: {% if contenedor.porcentaje_llenado is not none %}{{ contenedor.porcentaje_llenado|round(1) }}%{% else %}Sin datos{% endif %}</p>
+                    <p class="small text-secondary mb-0">Última actualización: {% if contenedor.ultima_actualizacion %}{{ contenedor.ultima_actualizacion.strftime('%d/%m/%Y %H:%M') }}{% else %}Sin actualización registrada{% endif %}</p>
+                </div>
+                {% else %}<p>Sin contenedores activos registrados.</p>{% endfor %}
+            </div>
+        </article>
+    </div>
+{% endfor %}
+</div>
 {% endblock %}
