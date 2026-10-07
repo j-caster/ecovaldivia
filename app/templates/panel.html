@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Panel privado · EcoValdivia{% endblock %}
+{% block content %}
+<h1 class="h3">Panel privado</h1>
+<p>Usuario: {{ current_user.nombre }}</p>
+<p>Rol: {{ current_user.rol }}</p>
+<p class="alert alert-success">Acceso correcto al panel operacional.</p>
+{% endblock %}

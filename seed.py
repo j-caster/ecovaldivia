@@ -4,7 +4,7 @@ from datetime import datetime, time
 
 from app import create_app
 from app.extensions import db
-from app.models import Contenedor, Horario, Material, PuntoMaterial, PuntoReciclaje
+from app.models import Contenedor, Horario, Material, PuntoMaterial, PuntoReciclaje, Usuario
 
 
 MATERIALES = {
@@ -89,6 +89,16 @@ def cargar_datos():
                 porcentaje_llenado=datos["porcentaje"],
                 ultima_actualizacion=datetime.now(), activo=True,
             ))
+    # Credenciales públicas exclusivamente para desarrollo/demostración.
+    for username, nombre, rol, password in (
+        ("admin", "Administrador de demostración", "administrador", "Admin123!"),
+        ("operador", "Operador de demostración", "operador", "Operador123!"),
+    ):
+        usuario = db.session.scalar(db.select(Usuario).where(Usuario.username == username))
+        if usuario is None:
+            usuario = Usuario(nombre=nombre, username=username, rol=rol, activo=True)
+            usuario.establecer_password(password)
+            db.session.add(usuario)
     db.session.commit()
 
 

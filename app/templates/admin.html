@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Administración · EcoValdivia{% endblock %}
+{% block content %}
+<h1 class="h3">Administración</h1>
+<p>Usuario: {{ current_user.nombre }}</p>
+<p>Rol: {{ current_user.rol }}</p>
+<p class="alert alert-success">Acceso correcto al área de administración.</p>
+{% endblock %}

@@ -5,5 +5,6 @@ from app.models.material import Material
 from app.models.punto_material import PuntoMaterial
 from app.models.horario import Horario
 from app.models.contenedor import Contenedor
+from app.models.usuario import Usuario
 
-__all__ = ["PuntoReciclaje", "Material", "PuntoMaterial", "Horario", "Contenedor"]
+__all__ = ["PuntoReciclaje", "Material", "PuntoMaterial", "Horario", "Contenedor", "Usuario"]
