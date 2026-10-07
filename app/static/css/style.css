@@ -1,0 +1,10 @@
+body {
+    background-color: #f7faf8;
+    color: #243b2e;
+}
+
+.brand {
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-decoration: none;
+}
