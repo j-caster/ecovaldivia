@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% from 'admin/_forms.html' import csrf, campo %}
+{% block content %}
+<h1 class="h3">{{ 'Editar material' if material and material.id else 'Crear material' }}</h1>
+<form method="post" class="col-lg-8">
+    {{ csrf() }}
+    {{ campo('nombre', 'Nombre', datos, limite=100) }}
+    <div class="mb-3">
+        <label class="form-label" for="instrucciones">Instrucciones</label>
+        <textarea class="form-control" id="instrucciones" name="instrucciones" rows="4" required>{{ datos.get('instrucciones', '') }}</textarea>
+    </div>
+    <button class="btn btn-success" type="submit">Guardar material</button>
+    <a class="btn btn-outline-secondary" href="{{ url_for('admin.materiales') }}">Volver</a>
+</form>
+{% endblock %}

@@ -51,9 +51,3 @@ def logout():
 @roles_required("operador", "administrador")
 def panel():
     return render_template("panel.html")
-
-
-@auth_bp.get("/admin")
-@roles_required("administrador")
-def admin():
-    return render_template("admin.html")

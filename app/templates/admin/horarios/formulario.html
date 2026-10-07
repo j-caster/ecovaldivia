@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% from 'admin/_forms.html' import csrf, campo %}
+{% block content %}
+<h1 class="h3">{{ 'Editar horario' if horario and horario.id else 'Agregar horario' }}</h1>
+<p>Punto: {{ punto.nombre }}</p>
+<form method="post" class="col-lg-6">
+    {{ csrf() }}
+    {% if horario %}
+    <div class="mb-3">
+        <label class="form-label" for="dia_semana">Día de la semana</label>
+        <select class="form-select" id="dia_semana" name="dia_semana" required>
+            <option value="">Selecciona un día</option>
+            {% for dia in dias %}<option value="{{ loop.index0 }}" {% if datos.get('dia_semana') == loop.index0|string %}selected{% endif %}>{{ dia }}</option>{% endfor %}
+        </select>
+    </div>
+    {% else %}
+    <fieldset class="mb-3">
+        <legend class="fs-6">Días de la semana</legend>
+        <p class="small text-secondary">Selecciona uno o varios días para el mismo rango horario.</p>
+        {% for dia in dias %}
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="dia_{{ loop.index0 }}" name="dia_semana" value="{{ loop.index0 }}" {% if loop.index0|string in dias_seleccionados %}checked{% endif %}>
+            <label class="form-check-label" for="dia_{{ loop.index0 }}">{{ dia }}</label>
+        </div>
+        {% endfor %}
+    </fieldset>
+    {% endif %}
+    {{ campo('hora_inicio', 'Hora de inicio', datos, 'time', paso='1') }}
+    {{ campo('hora_fin', 'Hora de fin', datos, 'time', paso='1') }}
+    <button class="btn btn-success" type="submit">Guardar horario</button>
+    <a class="btn btn-outline-secondary" href="{{ url_for('admin.punto_formulario', punto_id=punto.id) }}">Volver al punto</a>
+</form>
+{% endblock %}

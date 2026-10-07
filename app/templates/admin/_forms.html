@@ -1,0 +1,11 @@
+{% macro csrf() %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endmacro %}
+{% macro campo(nombre, etiqueta, datos, tipo='text', limite=None, minimo=None, maximo=None, paso=None) %}
+<div class="mb-3">
+    <label class="form-label" for="{{ nombre }}">{{ etiqueta }}</label>
+    <input class="form-control" id="{{ nombre }}" name="{{ nombre }}" type="{{ tipo }}" value="{{ datos.get(nombre, '') if datos.get(nombre) is not none else '' }}" required
+        {% if limite %}maxlength="{{ limite }}"{% endif %}
+        {% if minimo is not none %}min="{{ minimo }}"{% endif %}
+        {% if maximo is not none %}max="{{ maximo }}"{% endif %}
+        {% if paso %}step="{{ paso }}"{% endif %}>
+</div>
+{% endmacro %}

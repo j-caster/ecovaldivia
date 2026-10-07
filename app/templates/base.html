@@ -15,7 +15,7 @@
             <span>{{ current_user.nombre }} · {{ current_user.rol }}</span>
             <a class="text-white" href="{{ url_for('auth.panel') }}">Panel privado</a>
             {% if current_user.rol == 'administrador' %}
-            <a class="text-white" href="{{ url_for('auth.admin') }}">Administración</a>
+            <a class="text-white" href="{{ url_for('admin.index') }}">Administración</a>
             {% endif %}
             <form method="post" action="{{ url_for('auth.logout') }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

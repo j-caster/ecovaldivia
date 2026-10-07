@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% from 'admin/_forms.html' import csrf, campo %}
+{% block content %}
+<h1 class="h3">{{ 'Editar punto' if punto and punto.id else 'Crear punto' }}</h1>
+<a class="btn btn-outline-secondary mb-3" href="{{ url_for('admin.puntos') }}">Volver a puntos</a>
+<form method="post" class="col-lg-8 mb-4">
+    {{ csrf() }}
+    {{ campo('nombre', 'Nombre', datos, limite=150) }}
+    {{ campo('direccion', 'Dirección', datos, limite=255) }}
+    {{ campo('latitud', 'Latitud', datos, 'number', minimo=-90, maximo=90, paso='any') }}
+    {{ campo('longitud', 'Longitud', datos, 'number', minimo=-180, maximo=180, paso='any') }}
+    <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" id="activo" name="activo" value="1" {% if datos.get('activo') == '1' %}checked{% endif %}>
+        <label class="form-check-label" for="activo">Activo</label>
+    </div>
+    <button class="btn btn-success" type="submit">Guardar punto</button>
+</form>
+{% if punto and punto.id %}
+<section class="mb-4" aria-labelledby="materiales-titulo">
+    <h2 id="materiales-titulo" class="h4">Materiales asociados</h2>
+    <ul class="list-group mb-3">
+    {% for material in punto.materiales|sort(attribute='nombre') %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            {{ material.nombre }}
+            <form method="post" action="{{ url_for('admin.quitar_material', punto_id=punto.id, material_id=material.id) }}">
+                {{ csrf() }}<button class="btn btn-outline-danger btn-sm" type="submit">Quitar asociación</button>
+            </form>
+        </li>
+    {% else %}<li class="list-group-item">Sin materiales asociados.</li>{% endfor %}
+    </ul>
+    <form method="post" action="{{ url_for('admin.asociar_material', punto_id=punto.id) }}" class="d-flex flex-wrap gap-2">
+        {{ csrf() }}
+        <label for="material_id" class="align-self-center">Agregar material</label>
+        <select class="form-select w-auto" id="material_id" name="material_id" required>
+            <option value="">Selecciona un material</option>
+            {% for material in materiales if material not in punto.materiales %}<option value="{{ material.id }}">{{ material.nombre }}</option>{% endfor %}
+        </select>
+        <button class="btn btn-success" type="submit">Asociar</button>
+    </form>
+</section>
+<section aria-labelledby="horarios-titulo">
+    <h2 id="horarios-titulo" class="h4">Horarios</h2>
+    <a class="btn btn-success mb-3" href="{{ url_for('admin.horario_formulario', punto_id=punto.id) }}">Agregar horario</a>
+    <ul class="list-group">
+    {% for horario in punto.horarios|sort(attribute='hora_inicio')|sort(attribute='dia_semana') %}
+        <li class="list-group-item d-flex flex-wrap gap-2 align-items-center">
+            <span>{{ dias[horario.dia_semana] }}: {{ horario.hora_inicio.strftime('%H:%M') }}–{{ horario.hora_fin.strftime('%H:%M') }}</span>
+            <a class="btn btn-outline-success btn-sm" href="{{ url_for('admin.horario_formulario', punto_id=punto.id, horario_id=horario.id) }}">Editar</a>
+            <form method="post" action="{{ url_for('admin.eliminar_horario', punto_id=punto.id, horario_id=horario.id) }}">
+                {{ csrf() }}<button class="btn btn-outline-danger btn-sm" type="submit">Eliminar horario</button>
+            </form>
+        </li>
+    {% else %}<li class="list-group-item">Sin horarios registrados.</li>{% endfor %}
+    </ul>
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% from 'admin/_forms.html' import csrf %}
+{% block content %}
+<h1 class="h3">Puntos de reciclaje</h1>
+<div class="mb-3">
+    <a class="btn btn-success" href="{{ url_for('admin.punto_formulario') }}">Crear punto</a>
+    <a class="btn btn-outline-secondary" href="{{ url_for('admin.index') }}">Administración</a>
+</div>
+<div class="table-responsive">
+<table class="table align-middle">
+    <thead><tr><th>Nombre</th><th>Dirección</th><th>Estado</th><th>Acciones</th></tr></thead>
+    <tbody>
+    {% for punto in puntos %}
+    <tr>
+        <td>{{ punto.nombre }}</td><td>{{ punto.direccion }}</td><td>{{ 'Activo' if punto.activo else 'Inactivo' }}</td>
+        <td>
+            <a class="btn btn-outline-success btn-sm" href="{{ url_for('admin.punto_formulario', punto_id=punto.id) }}">Editar y gestionar</a>
+            <form class="d-inline" method="post" action="{{ url_for('admin.punto_estado', punto_id=punto.id) }}">
+                {{ csrf() }}<button class="btn btn-outline-secondary btn-sm" type="submit">{{ 'Desactivar' if punto.activo else 'Activar' }}</button>
+            </form>
+        </td>
+    </tr>
+    {% else %}<tr><td colspan="4">No hay puntos registrados.</td></tr>{% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}

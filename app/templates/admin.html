@@ -5,4 +5,8 @@
 <p>Usuario: {{ current_user.nombre }}</p>
 <p>Rol: {{ current_user.rol }}</p>
 <p class="alert alert-success">Acceso correcto al área de administración.</p>
+<div class="d-flex gap-3">
+    <a class="btn btn-success" href="{{ url_for('admin.puntos') }}">Puntos de reciclaje</a>
+    <a class="btn btn-success" href="{{ url_for('admin.materiales') }}">Materiales</a>
+</div>
 {% endblock %}
