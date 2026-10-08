@@ -2,7 +2,8 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from app.extensions import db
-from app.models import Horario, Material, PuntoMaterial, PuntoReciclaje
+from app.models import DispositivoIoT, Medicion, Horario, Material, PuntoMaterial, PuntoReciclaje
+from app.services.medicion_service import COMPUERTAS, MODOS, procesar_medicion
 from app.services.admin_validation import validar_horario, validar_horarios_creacion, validar_material, validar_punto
 from app.services.security import roles_required, validar_csrf
 
@@ -36,6 +37,42 @@ def guardar(mensaje):
 @admin_bp.get("/")
 def index():
     return render_template("admin.html")
+
+
+@admin_bp.route("/mediciones/simular", methods=["GET", "POST"])
+def simular_medicion():
+    datos = request.form if request.method == "POST" else {}
+    if request.method == "POST":
+        valores = dict(datos)
+        valores["fuente"] = "SIMULACION"
+        valores["ip_origen"] = request.remote_addr
+        if not valores.get("last_cmd_ctr"):
+            valores["last_cmd_ctr"] = None
+        if not valores.get("medicion_externa_id"):
+            valores["medicion_externa_id"] = None
+        try:
+            medicion = procesar_medicion(valores)
+        except ValueError as error:
+            flash(str(error), "danger")
+        except SQLAlchemyError:
+            flash("No se pudo guardar la medición. Intenta nuevamente.", "danger")
+        else:
+            flash("Medición simulada guardada." if medicion.id is not None
+                  else "Lectura procesada; estado actualizado sin nueva fila de historial.", "success")
+            return redirect(url_for("admin.historial_mediciones", dispositivo_id=medicion.dispositivo_id))
+    dispositivos = db.session.scalars(db.select(DispositivoIoT).where(
+        DispositivoIoT.activo.is_(True)).order_by(DispositivoIoT.identificador)).all()
+    return render_template("admin/mediciones/simular.html", datos=datos,
+                           dispositivos=dispositivos, modos=MODOS, compuertas=COMPUERTAS)
+
+
+@admin_bp.get("/dispositivos/<int:dispositivo_id>/mediciones")
+def historial_mediciones(dispositivo_id):
+    dispositivo = db.get_or_404(DispositivoIoT, dispositivo_id)
+    pagina = db.paginate(db.select(Medicion).where(
+        Medicion.dispositivo_id == dispositivo.id).order_by(
+        Medicion.recibida_en.desc(), Medicion.id.desc()), per_page=50)
+    return render_template("admin/mediciones/historial.html", dispositivo=dispositivo, pagina=pagina)
 
 
 @admin_bp.get("/puntos")

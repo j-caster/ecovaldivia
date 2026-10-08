@@ -5,4 +5,8 @@
 <p>Usuario: {{ current_user.nombre }}</p>
 <p>Rol: {{ current_user.rol }}</p>
 <p class="alert alert-success">Acceso correcto al panel operacional.</p>
+<div class="d-flex gap-3">
+    <a class="btn btn-success" href="{{ url_for('operacion.alertas') }}">Alertas</a>
+    <a class="btn btn-outline-success" href="{{ url_for('operacion.historial') }}">Historial operacional</a>
+</div>
 {% endblock %}

@@ -21,3 +21,6 @@ class Contenedor(db.Model):
     activo = db.Column(db.Boolean, nullable=False, default=True)
 
     punto = db.relationship("PuntoReciclaje", back_populates="contenedores")
+    dispositivos = db.relationship("DispositivoIoT", back_populates="contenedor")
+    alertas = db.relationship("Alerta", back_populates="contenedor")
+    eventos_operacionales = db.relationship("EventoOperacional", back_populates="contenedor")

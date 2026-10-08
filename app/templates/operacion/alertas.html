@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Alertas · EcoValdivia{% endblock %}
+{% block content %}
+<h1 class="h3">Alertas de llenado</h1>
+<p>Alertas activas primero. Fechas en UTC.</p>
+<a href="{{ url_for('operacion.historial') }}">Historial operacional</a>
+<div class="table-responsive mt-3">
+<table class="table table-striped">
+<thead><tr><th>Contenedor</th><th>Punto</th><th>Porcentaje actual</th><th>Estado actual</th><th>Alerta</th><th>Creada</th><th>Situación</th><th>Acción</th></tr></thead>
+<tbody>
+{% for alerta in pagina.items %}
+<tr>
+    <td>{{ alerta.contenedor.codigo }}</td><td>{{ alerta.contenedor.punto.nombre }}</td>
+    <td>{% if alerta.contenedor.porcentaje_llenado is not none %}{{ '%.1f'|format(alerta.contenedor.porcentaje_llenado) }}%{% else %}Pendiente de lectura{% endif %}</td>
+    <td>{{ alerta.contenedor.estado }}</td><td>{{ alerta.mensaje }}</td>
+    <td>{{ alerta.creada_en.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+    <td>{% if alerta.activa %}Activa{% else %}Cerrada {{ alerta.cerrada_en.strftime('%Y-%m-%d %H:%M:%S') if alerta.cerrada_en else '' }}{% endif %}</td>
+    <td>{% if alerta.activa %}
+        <form method="post" action="{{ url_for('operacion.vaciado', contenedor_id=alerta.contenedor_id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-success btn-sm">Registrar vaciado</button>
+        </form>
+    {% endif %}</td>
+</tr>
+{% else %}<tr><td colspan="8">No hay alertas registradas.</td></tr>{% endfor %}
+</tbody></table></div>
+{% if pagina.has_prev %}<a href="{{ url_for('operacion.alertas', page=pagina.prev_num) }}">Anterior</a>{% endif %}
+{% if pagina.has_next %}<a href="{{ url_for('operacion.alertas', page=pagina.next_num) }}">Siguiente</a>{% endif %}
+<h2 class="h5 mt-4">Registrar vaciado de otro contenedor</h2>
+<ul class="list-group">
+{% for contenedor in contenedores %}
+<li class="list-group-item d-flex justify-content-between align-items-center">
+    <span>{{ contenedor.codigo }} · {{ contenedor.estado }}</span>
+    <form method="post" action="{{ url_for('operacion.vaciado', contenedor_id=contenedor.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-outline-success btn-sm">Registrar vaciado</button>
+    </form>
+</li>
+{% else %}<li class="list-group-item">No hay contenedores activos.</li>{% endfor %}
+</ul>
+{% endblock %}

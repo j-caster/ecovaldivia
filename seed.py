@@ -4,7 +4,7 @@ from datetime import datetime, time
 
 from app import create_app
 from app.extensions import db
-from app.models import Contenedor, Horario, Material, PuntoMaterial, PuntoReciclaje, Usuario
+from app.models import Contenedor, DispositivoIoT, Horario, Material, PuntoMaterial, PuntoReciclaje, Usuario
 
 
 MATERIALES = {
@@ -89,6 +89,16 @@ def cargar_datos():
                 porcentaje_llenado=datos["porcentaje"],
                 ultima_actualizacion=datetime.now(), activo=True,
             ))
+    db.session.flush()
+    demo = db.session.scalar(db.select(DispositivoIoT).where(
+        DispositivoIoT.identificador == "DEMO-IOT-01"))
+    contenedor_demo = db.session.scalar(db.select(Contenedor).where(
+        Contenedor.codigo == "DEMO-CENTRO-01"))
+    activo = db.session.scalar(db.select(DispositivoIoT).where(
+        DispositivoIoT.contenedor_id == contenedor_demo.id, DispositivoIoT.activo.is_(True)))
+    if demo is None and activo is None:
+        db.session.add(DispositivoIoT(
+            identificador="DEMO-IOT-01", contenedor_id=contenedor_demo.id, activo=True))
     # Credenciales públicas exclusivamente para desarrollo/demostración.
     for username, nombre, rol, password in (
         ("admin", "Administrador de demostración", "administrador", "Admin123!"),

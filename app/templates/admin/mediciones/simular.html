@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Simular medición · EcoValdivia{% endblock %}
+{% block content %}
+<h1 class="h3">Simular medición</h1>
+<form method="post" class="row g-3">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="col-md-6">
+        <label for="dispositivo" class="form-label">Dispositivo</label>
+        <select id="dispositivo" name="dispositivo_identificador" class="form-select" required>
+            {% for dispositivo in dispositivos %}
+            <option value="{{ dispositivo.identificador }}" {% if datos.get('dispositivo_identificador') == dispositivo.identificador %}selected{% endif %}>{{ dispositivo.identificador }} · {{ dispositivo.contenedor.codigo }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    {% for campo, etiqueta in [('sensor1_cm', 'Sensor 1 (cm)'), ('sensor2_cm', 'Sensor 2 (cm)')] %}
+    <div class="col-md-3">
+        <label for="{{ campo }}" class="form-label">{{ etiqueta }}</label>
+        <input id="{{ campo }}" name="{{ campo }}" type="number" step="any" min="0.000001" value="{{ datos.get(campo, '') }}" class="form-control" required>
+    </div>
+    {% endfor %}
+    {% for campo, opciones in [('modo', modos), ('compuerta', compuertas)] %}
+    <div class="col-md-6">
+        <label for="{{ campo }}" class="form-label">{{ campo|capitalize }}</label>
+        <select id="{{ campo }}" name="{{ campo }}" class="form-select" required>
+            {% for opcion in opciones %}<option {% if datos.get(campo) == opcion %}selected{% endif %}>{{ opcion }}</option>{% endfor %}
+        </select>
+    </div>
+    {% endfor %}
+    <div class="col-md-6">
+        <label for="boot" class="form-label">BOOT (opcional; se genera si está vacío)</label>
+        <input id="boot" name="boot" maxlength="100" value="{{ datos.get('boot', '') }}" class="form-control">
+    </div>
+    <div class="col-md-6">
+        <label for="seq" class="form-label">Secuencia</label>
+        <input id="seq" name="seq" type="number" min="0" step="1" value="{{ datos.get('seq', '0') }}" class="form-control" required>
+    </div>
+    {% for campo, etiqueta in [('medicion_externa_id', 'ID externo de medición (opcional)'), ('last_cmd_ctr', 'Último contador de comando (opcional)')] %}
+    <div class="col-md-6">
+        <label for="{{ campo }}" class="form-label">{{ etiqueta }}</label>
+        <input id="{{ campo }}" name="{{ campo }}" value="{{ datos.get(campo, '') }}" maxlength="100" class="form-control">
+    </div>
+    {% endfor %}
+    <div><button class="btn btn-success" {% if not dispositivos %}disabled{% endif %}>Guardar simulación</button></div>
+</form>
+<h2 class="h5 mt-4">Historial por dispositivo</h2>
+<ul>
+    {% for dispositivo in dispositivos %}
+    <li><a href="{{ url_for('admin.historial_mediciones', dispositivo_id=dispositivo.id) }}">{{ dispositivo.identificador }} · {{ dispositivo.contenedor.codigo }}</a></li>
+    {% else %}<li>No hay dispositivos activos. Carga los datos de demostración.</li>{% endfor %}
+</ul>
+{% endblock %}

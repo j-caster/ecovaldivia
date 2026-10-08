@@ -6,3 +6,4 @@ instance/
 *.db
 secrets*
 serviceAccountKey.json
+legacy_reference/
