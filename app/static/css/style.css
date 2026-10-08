@@ -8,3 +8,16 @@ body {
     font-weight: 700;
     text-decoration: none;
 }
+
+.hero-ecovaldivia {
+    min-height: 420px;
+    display: flex;
+    align-items: center;
+    color: white;
+    background-image:
+        linear-gradient(rgba(10, 45, 30, 0.58), rgba(10, 45, 30, 0.58)),
+        url("../img/valdivia-fondo.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
