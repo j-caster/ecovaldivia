@@ -15,6 +15,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from app.extensions import db
 from app.models import DispositivoIoT, Medicion
 from app.services.operacion_service import asegurar_alerta_llenado
+from app.services.confirmacion_service import confirmar_llenado
 
 DISTANCIA_VACIO_CM = 175
 DISTANCIA_LLENO_CM = 25
@@ -144,6 +145,9 @@ def procesar_medicion(datos):
         Medicion.boot == valores["boot"], Medicion.seq == valores["seq"]))
     if duplicado is not None:
         raise ValueError("Medición duplicada para dispositivo, boot y seq.")
+    valores["estado_calculado"], contador_lleno = confirmar_llenado(
+        valores["porcentaje_llenado"], valores["estado_calculado"], valores["boot"],
+        dispositivo.boot_confirmacion, dispositivo.contador_lleno)
     ultima = db.session.scalar(db.select(Medicion).where(
         Medicion.dispositivo_id == dispositivo.id).order_by(Medicion.id.desc()).limit(1))
     persistir = debe_persistir_medicion(ultima, valores, dispositivo)
@@ -157,6 +161,8 @@ def procesar_medicion(datos):
         dispositivo.ultimo_boot = medicion.boot
         dispositivo.ultimo_seq = medicion.seq
         dispositivo.ultima_actualizacion = fecha
+        dispositivo.contador_lleno = contador_lleno
+        dispositivo.boot_confirmacion = medicion.boot
         dispositivo.contenedor.porcentaje_llenado = medicion.porcentaje_llenado
         dispositivo.contenedor.estado = medicion.estado_calculado
         dispositivo.contenedor.ultima_actualizacion = fecha

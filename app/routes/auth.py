@@ -1,10 +1,11 @@
-from flask import Blueprint, flash, redirect, render_template, request, session, url_for
+from flask import Blueprint, flash, jsonify, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_user, logout_user
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from app.extensions import db, login_manager
 from app.models import Usuario
 from app.services.security import roles_required, validar_csrf
+from app.services.panel_service import INTERVALO_PANEL_SEGUNDOS, datos_panel
 
 auth_bp = Blueprint("auth", __name__)
 # Verificación equivalente para usernames desconocidos, sin revelar su existencia.
@@ -50,4 +51,13 @@ def logout():
 @auth_bp.get("/panel")
 @roles_required("operador", "administrador")
 def panel():
-    return render_template("panel.html")
+    return render_template("panel.html", contenedores=datos_panel(),
+                           intervalo_panel_ms=INTERVALO_PANEL_SEGUNDOS * 1000)
+
+
+@auth_bp.get("/panel/datos")
+@roles_required("operador", "administrador")
+def panel_datos():
+    respuesta = jsonify(contenedores=datos_panel())
+    respuesta.headers["Cache-Control"] = "no-store"
+    return respuesta

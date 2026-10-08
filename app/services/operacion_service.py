@@ -11,11 +11,7 @@ ESTADO_TRAS_VACIADO = "Vaciado pendiente de lectura"
 
 
 def asegurar_alerta_llenado(contenedor, fecha):
-    """No confirma transacciones. Punto de extensión para futura confirmación.
-
-    Actualmente EcoValdivia no dispone de una capa independiente de consistencia;
-    se utiliza el estado calculado por el servicio, sin añadir otro algoritmo.
-    """
+    """No confirma transacciones; usa el estado ya consolidado por el servicio."""
     if contenedor.estado != "Lleno":
         return None
     alerta = db.session.scalar(db.select(Alerta).where(
@@ -49,6 +45,9 @@ def registrar_vaciado(contenedor_id, usuario_id):
         contenedor.estado = ESTADO_TRAS_VACIADO
         contenedor.porcentaje_llenado = None
         contenedor.ultima_actualizacion = fecha
+        for dispositivo in contenedor.dispositivos:
+            dispositivo.contador_lleno = 0
+            dispositivo.boot_confirmacion = None
         db.session.commit()
     except SQLAlchemyError:
         db.session.rollback()

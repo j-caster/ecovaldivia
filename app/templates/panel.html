@@ -9,4 +9,27 @@
     <a class="btn btn-success" href="{{ url_for('operacion.alertas') }}">Alertas</a>
     <a class="btn btn-outline-success" href="{{ url_for('operacion.historial') }}">Historial operacional</a>
 </div>
+<section id="panel-operacional" class="mt-4" data-endpoint="{{ url_for('auth.panel_datos') }}" data-intervalo="{{ intervalo_panel_ms }}">
+    <h2 class="h4">Contenedores</h2>
+    <p id="panel-actualizacion" class="text-secondary" role="status">Actualización automática cada {{ intervalo_panel_ms // 1000 }} segundos. Fechas en UTC.</p>
+    <div class="table-responsive">
+    <table class="table table-striped align-middle">
+        <thead><tr><th>Código</th><th>Punto</th><th>Porcentaje</th><th>Estado</th><th>Modo</th><th>Compuerta</th><th>Última actualización</th><th>Alerta activa</th><th>Conectividad</th></tr></thead>
+        <tbody id="panel-contenedores">
+        {% for contenedor in contenedores %}
+        <tr>
+            <td>{{ contenedor.codigo }}</td><td>{{ contenedor.punto }}</td>
+            <td>{% if contenedor.porcentaje is not none %}{{ '%.1f'|format(contenedor.porcentaje) }}%{% else %}Sin datos{% endif %}</td>
+            <td><span class="badge {{ {'Disponible': 'bg-success', 'Medio': 'bg-primary', 'Casi lleno': 'bg-warning text-dark', 'Lleno': 'bg-danger'}.get(contenedor.estado, 'bg-secondary') }}">{{ contenedor.estado }}</span></td>
+            <td>{{ contenedor.modo or 'Sin datos' }}</td><td>{{ contenedor.compuerta or 'Sin datos' }}</td>
+            <td>{{ contenedor.ultima_actualizacion or 'Sin datos' }}</td>
+            <td>{% if contenedor.alerta %}<span class="badge bg-danger">{{ contenedor.alerta }}</span>{% else %}Sin alerta{% endif %}</td>
+            <td><span class="badge {{ 'bg-success' if contenedor.conectividad == 'ONLINE' else 'bg-secondary' }}">{{ contenedor.conectividad }}</span></td>
+        </tr>
+        {% else %}<tr><td colspan="9">No hay contenedores activos.</td></tr>{% endfor %}
+        </tbody>
+    </table>
+    </div>
+</section>
+<script src="{{ url_for('static', filename='js/panel.js') }}" defer></script>
 {% endblock %}

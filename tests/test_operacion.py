@@ -36,6 +36,7 @@ class OperacionTests(unittest.TestCase):
     def tearDown(self):
         db.session.remove()
         db.drop_all()
+        db.engine.dispose()
         self.ctx.pop()
 
     def lectura(self, seq=0, segundos=0, **cambios):
@@ -49,21 +50,28 @@ class OperacionTests(unittest.TestCase):
     def cantidad(self, modelo):
         return db.session.scalar(db.select(db.func.count()).select_from(modelo))
 
+    def llenar(self):
+        primera = self.lectura()
+        self.lectura(seq=1, segundos=2)
+        self.lectura(seq=2, segundos=4)
+        return primera
+
     def test_alerta_al_llenarse_y_no_duplicar(self):
         self.lectura(sensor1_cm=175, sensor2_cm=175)
         self.assertEqual(self.cantidad(Alerta), 0)
         self.lectura(seq=1, segundos=2)
+        self.lectura(seq=2, segundos=4)
+        self.lectura(seq=3, segundos=6)
         alerta = db.session.scalar(db.select(Alerta))
         self.assertTrue(alerta.activa)
         self.assertEqual(alerta.tipo, "LLENO")
         self.assertEqual(alerta.contenedor_id, self.contenedor.id)
-        self.assertEqual(alerta.creada_en, (self.fecha + timedelta(seconds=2)).replace(tzinfo=None))
-        self.lectura(seq=2, segundos=4)
-        self.lectura(seq=3, segundos=64)
+        self.assertEqual(alerta.creada_en, (self.fecha + timedelta(seconds=6)).replace(tzinfo=None))
+        self.lectura(seq=4, segundos=64)
         self.assertEqual(self.cantidad(Alerta), 1)
 
     def test_vaciado_cierra_alerta_crea_evento_y_conserva_historial(self):
-        medicion = self.lectura()
+        medicion = self.llenar()
         previo_boot, previo_seq = self.dispositivo.ultimo_boot, self.dispositivo.ultimo_seq
         evento = registrar_vaciado(self.contenedor.id, self.usuario.id)
         alerta = db.session.scalar(db.select(Alerta))
@@ -74,11 +82,13 @@ class OperacionTests(unittest.TestCase):
         self.assertIn("cerradas: 1", evento.descripcion)
         self.assertEqual(self.contenedor.estado, ESTADO_TRAS_VACIADO)
         self.assertIsNone(self.contenedor.porcentaje_llenado)
-        self.assertEqual(self.cantidad(Medicion), 1)
+        self.assertEqual(self.cantidad(Medicion), 2)
         self.assertEqual(db.session.get(Medicion, medicion.id).porcentaje_llenado, 100)
         self.assertEqual((self.dispositivo.ultimo_boot, self.dispositivo.ultimo_seq), (previo_boot, previo_seq))
-        self.lectura(seq=1, segundos=2, sensor1_cm=175, sensor2_cm=175)
-        self.lectura(seq=2, segundos=4)
+        self.lectura(seq=3, segundos=6, sensor1_cm=175, sensor2_cm=175)
+        self.lectura(seq=4, segundos=8)
+        self.lectura(seq=5, segundos=10)
+        self.lectura(seq=6, segundos=12)
         self.assertEqual(self.cantidad(Alerta), 2)
         activas = db.session.scalars(db.select(Alerta).where(Alerta.activa.is_(True))).all()
         self.assertEqual(len(activas), 1)
@@ -101,10 +111,10 @@ class OperacionTests(unittest.TestCase):
         self.assertEqual(self.dispositivo.ultimo_seq, 1)
 
     def test_identica_antes_60_no_persiste_y_a_60_si(self):
-        self.lectura()
-        self.assertIsNone(self.lectura(seq=1, segundos=2).id)
-        self.assertIsNone(self.lectura(seq=2, segundos=59).id)
-        self.assertIsNotNone(self.lectura(seq=3, segundos=60).id)
+        self.lectura(sensor1_cm=100, sensor2_cm=100)
+        self.assertIsNone(self.lectura(seq=1, segundos=2, sensor1_cm=100, sensor2_cm=100).id)
+        self.assertIsNone(self.lectura(seq=2, segundos=59, sensor1_cm=100, sensor2_cm=100).id)
+        self.assertIsNotNone(self.lectura(seq=3, segundos=60, sensor1_cm=100, sensor2_cm=100).id)
         self.assertEqual(self.cantidad(Medicion), 2)
 
     def test_cambios_estado_modo_compuerta_boot_persisten(self):
@@ -116,7 +126,7 @@ class OperacionTests(unittest.TestCase):
         self.assertEqual(self.cantidad(Medicion), 5)
 
     def test_alerta_unica_en_base_de_datos(self):
-        self.lectura()
+        self.llenar()
         db.session.add(Alerta(contenedor_id=self.contenedor.id, tipo="LLENO", mensaje="Duplicada",
                              activa=True, creada_en=self.fecha.replace(tzinfo=None)))
         with self.assertRaises(IntegrityError):
@@ -124,7 +134,7 @@ class OperacionTests(unittest.TestCase):
         db.session.rollback()
 
     def test_fallo_vaciado_revierte_alerta_evento_y_estado(self):
-        self.lectura()
+        self.llenar()
         with patch.object(db.session, "commit", side_effect=SQLAlchemyError("fallo")):
             with self.assertRaises(SQLAlchemyError):
                 registrar_vaciado(self.contenedor.id, self.usuario.id)
@@ -161,7 +171,7 @@ class OperacionTests(unittest.TestCase):
         self.assertEqual(self.cantidad(EventoOperacional), 0)
 
     def test_operador_y_administrador_acceden_y_registran(self):
-        self.lectura()
+        self.llenar()
         ruta = f"/operacion/contenedores/{self.contenedor.id}/vaciado"
         for nombre, password in (("operador", "Operador123!"), ("admin", "Admin123!")):
             self.login(nombre, password)

@@ -4,6 +4,7 @@ from app.extensions import db
 class DispositivoIoT(db.Model):
     __tablename__ = "dispositivo_iot"
     __table_args__ = (
+        db.CheckConstraint("contador_lleno BETWEEN 0 AND 3", name="ck_dispositivo_contador_lleno"),
         db.Index(
             "uq_dispositivo_activo_contenedor", "contenedor_id", unique=True,
             sqlite_where=db.text("activo = true"),
@@ -21,6 +22,8 @@ class DispositivoIoT(db.Model):
     ultimo_boot = db.Column(db.String(100))
     ultimo_seq = db.Column(db.BigInteger)
     ultima_actualizacion = db.Column(db.DateTime)
+    contador_lleno = db.Column(db.Integer, nullable=False, default=0, server_default="0")
+    boot_confirmacion = db.Column(db.String(100))
 
     contenedor = db.relationship("Contenedor", back_populates="dispositivos")
     mediciones = db.relationship("Medicion", back_populates="dispositivo")

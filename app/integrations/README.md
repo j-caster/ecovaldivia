@@ -60,3 +60,29 @@ al Arduino. La comprobación BOOT/SEQ utiliza el estado persistente por datagram
 la restricción única dispositivo/BOOT/SEQ se conserva como defensa adicional.
 Un BOOT diferente se acepta como reinicio, conforme al alcance del Hito 6B:
 no se mantiene una lista histórica de BOOT retirados.
+
+## Panel y confirmación (Hito 8)
+
+Para una base creada antes del Hito 8, ejecutar una vez:
+
+```powershell
+.\.venv\Scripts\python.exe migrate_hito8.py
+```
+
+La migración agrega `contador_lleno` y `boot_confirmacion`, conservando datos;
+puede repetirse. Reiniciar Flask y el worker para cargar los servicios nuevos.
+El transporte UDP conserva el mismo protocolo y configuración.
+
+El panel privado (`/panel`) consulta `/panel/datos` mediante fetch cada cinco
+segundos, con acceso exclusivo de operador/administrador. La conectividad usa
+la actividad del dispositivo: ONLINE hasta 15 segundos inclusive, OFFLINE
+después o cuando no hay actividad registrada. Umbral e intervalo están en
+`app/services/panel_service.py`.
+
+El estado Lleno requiere tres lecturas aceptadas consecutivas de al menos 95%
+del mismo dispositivo y BOOT. Hasta confirmarlo se muestra Casi lleno y se
+conserva el porcentaje físico calculado. Una lectura inferior al umbral,
+un cambio de BOOT o un vaciado reinician el contador. Replays e inválidas no
+lo incrementan. La confirmación no depende de que se inserte una Medicion;
+el estado se confirma en la misma transacción que BOOT/SEQ y las alertas.
+Las constantes están en `app/services/confirmacion_service.py`.
