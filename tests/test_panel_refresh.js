@@ -5,7 +5,8 @@ const path = require("node:path");
 const vm = require("node:vm");
 
 class Nodo {
-    constructor() { this.children = []; this.textContent = ""; }
+    constructor() { this.children = []; this.textContent = ""; this.style = {}; this.attributes = {}; }
+    setAttribute(nombre, valor) { this.attributes[nombre] = valor; }
     append(...hijos) { this.children.push(...hijos); }
     replaceChildren(fragmento) { this.children = [...fragmento.children]; }
 }

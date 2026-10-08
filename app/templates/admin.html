@@ -1,15 +1,20 @@
 {% extends "base.html" %}
+{% from '_visual.html' import icon %}
 {% block title %}Administración · EcoValdivia{% endblock %}
 {% block content %}
-<h1 class="h3">Administración</h1>
-<p>Usuario: {{ current_user.nombre }}</p>
-<p>Rol: {{ current_user.rol }}</p>
-<p class="alert alert-success">Acceso correcto al área de administración.</p>
-<div class="d-flex gap-3">
-    <a class="btn btn-success" href="{{ url_for('admin.puntos') }}">Puntos de reciclaje</a>
-    <a class="btn btn-success" href="{{ url_for('admin.materiales') }}">Materiales</a>
-    <a class="btn btn-success" href="{{ url_for('admin.simular_medicion') }}">Mediciones IoT</a>
-    <a class="btn btn-success" href="{{ url_for('operacion.alertas') }}">Alertas</a>
-    <a class="btn btn-outline-success" href="{{ url_for('operacion.historial') }}">Historial operacional</a>
+<div class="page-heading"><div><p class="eyebrow mb-2">Gestión de EcoValdivia</p><h1>Administración</h1><p>{{ current_user.nombre }} · {{ current_user.rol }}</p></div><a class="btn btn-outline-success" href="{{ url_for('auth.panel') }}">Ver panel operacional</a></div>
+<div class="row g-4">
+{% for simbolo, titulo, descripcion, destino in [
+    ('mapa', 'Puntos de reciclaje', 'Mantén al día las ubicaciones, materiales y horarios de cada punto.', 'admin.puntos'),
+    ('material', 'Materiales', 'Organiza los materiales aceptados y sus instrucciones de preparación.', 'admin.materiales'),
+    ('sensor', 'Mediciones IoT', 'Consulta el historial y registra mediciones de demostración.', 'admin.simular_medicion'),
+    ('alerta', 'Alertas', 'Revisa las alertas de llenado y registra los vaciados.', 'operacion.alertas'),
+    ('reloj', 'Historial operacional', 'Consulta los vaciados y las acciones realizadas por el equipo.', 'operacion.historial')
+] %}
+<div class="col-12 col-md-6 col-xl-4"><article class="card admin-card"><div class="card-body">
+    <span class="icon-tile">{{ icon(simbolo) }}</span><h2>{{ titulo }}</h2><p>{{ descripcion }}</p>
+    <a class="btn btn-outline-success" href="{{ url_for(destino) }}">Abrir {{ titulo|lower }} {{ icon('flecha') }}</a>
+</div></article></div>
+{% endfor %}
 </div>
 {% endblock %}

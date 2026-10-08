@@ -100,6 +100,8 @@
     }
 
     function actualizarTarjetas(nuevosPuntos) {
+        const colores = {"Disponible": "state-disponible", "Medio": "state-medio",
+            "Casi lleno": "state-casi", "Lleno": "state-lleno"};
         const porId = new Map(nuevosPuntos.map(punto => [String(punto.punto_id), punto]));
         for (const tarjeta of document.querySelectorAll("[data-punto-id]")) {
             const punto = porId.get(tarjeta.dataset.puntoId);
@@ -111,8 +113,21 @@
                 bloque.hidden = !c;
                 if (!c) continue;
                 bloque.querySelector('[data-campo="estado"]').textContent = c.estado || "Sin estado";
+                bloque.querySelector('[data-campo="estado"]').className = `badge status-badge ${colores[c.estado] || "state-neutral"}`;
                 bloque.querySelector('[data-campo="porcentaje"]').textContent = Number.isFinite(c.porcentaje_llenado)
                     ? `${c.porcentaje_llenado.toFixed(1)}%` : "Sin datos";
+                const progreso = bloque.querySelector('[data-campo="progreso"]');
+                if (progreso) {
+                    if (c.porcentaje_llenado !== null) {
+                        progreso.setAttribute("aria-valuenow", String(c.porcentaje_llenado));
+                        progreso.removeAttribute("aria-valuetext");
+                    } else {
+                        progreso.removeAttribute("aria-valuenow");
+                        progreso.setAttribute("aria-valuetext", "Sin datos");
+                    }
+                    progreso.firstElementChild.style.width = `${c.porcentaje_llenado ?? 0}%`;
+                    progreso.firstElementChild.className = `progress-bar ${colores[c.estado] || "state-neutral"}`;
+                }
                 const fecha = c.ultima_actualizacion ? new Date(c.ultima_actualizacion) : null;
                 bloque.querySelector('[data-campo="fecha"]').textContent = fecha && !Number.isNaN(fecha.getTime())
                     ? fecha.toLocaleString("es-CL", {timeZone: "UTC"}) : "Sin actualización registrada";

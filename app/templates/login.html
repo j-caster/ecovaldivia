@@ -1,8 +1,11 @@
 {% extends "base.html" %}
+{% from '_visual.html' import icon %}
 {% block title %}Iniciar sesión · EcoValdivia{% endblock %}
 {% block content %}
-<h1 class="h3">Iniciar sesión</h1>
-<form method="post" action="{{ url_for('auth.login') }}" class="col-md-6 col-lg-4">
+<div class="login-layout"><section class="card login-card" aria-labelledby="login-titulo"><div class="card-body">
+<span class="icon-tile mb-4">{{ icon('candado') }}</span><p class="eyebrow">Equipo EcoValdivia</p>
+<h1 id="login-titulo">Iniciar sesión</h1><p class="text-secondary mb-4">Accede al panel para acompañar el reciclaje de nuestra ciudad.</p>
+<form method="post" action="{{ url_for('auth.login') }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="mb-3">
         <label for="username" class="form-label">Usuario</label>
@@ -12,6 +15,8 @@
         <label for="password" class="form-label">Contraseña</label>
         <input id="password" name="password" type="password" class="form-control" autocomplete="current-password" required>
     </div>
-    <button class="btn btn-success" type="submit">Iniciar sesión</button>
+    <button class="btn btn-success w-100 mt-2" type="submit">Iniciar sesión {{ icon('flecha') }}</button>
 </form>
+<a class="d-inline-block small mt-4" href="{{ url_for('public.index') }}">Volver al mapa público</a>
+</div></section></div>
 {% endblock %}

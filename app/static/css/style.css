@@ -1,23 +1,367 @@
-body {
-    background-color: #f7faf8;
-    color: #243b2e;
+:root {
+    --eco-primary-rgb: 20, 107, 76;
+    --eco-primary: rgb(var(--eco-primary-rgb));
+    --eco-secondary: #0e4735;
+    --eco-background: #f4f8f5;
+    --eco-surface: #ffffff;
+    --eco-text: #203a2e;
+    --eco-success: var(--eco-primary);
+    --eco-warning: #f2bb4b;
+    --eco-warning-text: #533600;
+    --eco-danger: #ae283c;
+    --eco-blue: #245ea6;
+    --eco-gray: #52635a;
+    --eco-muted: #eaf1ec;
+    --eco-border: #dbe6de;
+    --eco-overlay: rgba(9, 37, 27, .68);
+    --eco-shadow: 0 8px 28px rgba(19, 57, 38, .07);
+    --eco-radius: 1.1rem;
+    --bs-success-rgb: var(--eco-primary-rgb);
+    --bs-body-color: var(--eco-text);
+    --bs-body-bg: var(--eco-background);
+}
+body { background: var(--eco-background); color: var(--eco-text); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+a { color: var(--eco-primary); }
+a:hover { color: var(--eco-secondary); }
+h1, h2, h3 { letter-spacing: -.025em; }
+.text-secondary { color: var(--eco-gray) !important; }
+.eco-icon { width: 1.35em; height: 1.35em; flex-shrink: 0; vertical-align: -.22em; }
+.icon-tile { display: inline-flex; align-items: center; justify-content: center; width: 3rem; height: 3rem; border-radius: .9rem; background: var(--eco-muted); color: var(--eco-primary); }
+.site-header { background: var(--eco-secondary); box-shadow: var(--eco-shadow); }
+.navbar { min-height: 80px; }
+.brand { font-size: 1.45rem; font-weight: 750; display: inline-flex; align-items: center; gap: .65rem; }
+.brand-mark { display: inline-flex; align-items: center; justify-content: center; width: 2.25rem; height: 2.25rem; border: 1px solid currentColor; border-radius: .75rem; }
+.navbar-dark .nav-link { color: var(--eco-surface); font-size: .95rem; }
+.navbar-dark .nav-link:hover, .navbar-dark .nav-link:focus { text-decoration: underline; text-underline-offset: .35rem; }
+.site-footer { margin-top: 2rem; color: var(--eco-gray); background: var(--eco-surface); border-top: 1px solid var(--eco-border); }
+.app-main { min-height: calc(100vh - 185px); }
+.skip-link { position: fixed; top: -5rem; left: 1rem; z-index: 2000; padding: .75rem 1rem; background: var(--eco-surface); }
+.skip-link:focus { top: 1rem; }
+:focus-visible { outline: 3px solid var(--eco-blue); outline-offset: 4px; }
+.btn { border-radius: .65rem; font-weight: 600; padding: .65rem 1rem; }
+.btn-sm { padding: .45rem .7rem; }
+.btn-success { --bs-btn-bg: var(--eco-primary); --bs-btn-border-color: var(--eco-primary); --bs-btn-hover-bg: var(--eco-secondary); --bs-btn-hover-border-color: var(--eco-secondary); --bs-btn-active-bg: var(--eco-secondary); }
+.btn-outline-success { --bs-btn-color: var(--eco-primary); --bs-btn-border-color: var(--eco-primary); --bs-btn-hover-bg: var(--eco-primary); --bs-btn-hover-border-color: var(--eco-primary); }
+.form-label { font-weight: 600; }
+.form-control, .form-select { border-color: var(--eco-border); border-radius: .65rem; min-height: 45px; }
+.form-control:focus, .form-select:focus { border-color: var(--eco-primary); box-shadow: 0 0 0 .2rem rgba(var(--eco-primary-rgb), .18); }
+.card { border: 1px solid var(--eco-border); border-radius: var(--eco-radius); box-shadow: var(--eco-shadow); }
+.card-body { padding: 1.5rem; min-width: 0; }
+.eyebrow { font-size: .75rem; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; color: var(--eco-primary); }
+.page-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.75rem; }
+.page-heading h1 { font-size: clamp(1.75rem, 3vw, 2.3rem); margin-bottom: .4rem; font-weight: 750; }
+.page-heading p { margin-bottom: 0; color: var(--eco-gray); }
+.hero-ecovaldivia { min-height: 430px; display: flex; align-items: center; color: var(--eco-surface); border-radius: 1.5rem; overflow: hidden; background-image: linear-gradient(100deg, var(--eco-overlay), rgba(9, 37, 27, .2)), url("../img/valdivia-fondo.png"); background-size: cover; background-position: center; box-shadow: var(--eco-shadow); margin-bottom: 1.75rem; }
+.hero-ecovaldivia h1 { font-size: clamp(2.8rem, 6vw, 4.5rem); line-height: 1.05; }
+.hero-ecovaldivia .eyebrow { color: var(--eco-surface); }
+.hero-copy { max-width: 40rem; }
+.hero-benefits { display: flex; flex-wrap: wrap; gap: .75rem; }
+.hero-benefits span { display: inline-flex; gap: .4rem; align-items: center; font-size: .85rem; padding: .5rem .7rem; background: var(--eco-overlay); border: 1px solid rgba(255, 255, 255, .35); border-radius: .6rem; }
+.filter-card { margin-bottom: 1.25rem; background: var(--eco-surface); }
+.filter-card .card-body { padding: .9rem 1.15rem; }
+.public-filter { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: .85rem; }
+.public-filter .form-select { min-height: 40px; }
+.public-filter .btn { padding: .5rem .9rem; }
+.filter-actions { display: flex; flex-wrap: wrap; gap: .65rem; }
+.public-layout > *, .row > * { min-width: 0; }
+.map-card .card-body { padding: 1.4rem; }
+.map-card { position: sticky; top: 1rem; }
+.map-card #mapa-aviso:empty { display: none; }
+.point-list { display: grid; gap: 1rem; }
+.point-list .card-title { font-size: 1.2rem; line-height: 1.4; }
+.point-list .card-body { padding: 1.3rem; }
+.public-layout .map-card, .point-list .card { background: var(--eco-surface); }
+.point-list-heading { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin-bottom: .85rem; min-height: 2rem; }
+.point-list .card-body { padding: 1rem; }
+.point-list .card-title { font-size: 1.1rem; margin-bottom: .4rem; overflow-wrap: anywhere; }
+.point-list .point-address { margin-bottom: .65rem; overflow-wrap: anywhere; }
+.point-list .material-badge { padding: .35rem .5rem; font-size: .75rem; }
+.point-list .schedule-list { margin-bottom: .65rem; font-size: .8rem; }
+.point-list .container-status { padding: .7rem; }
+.point-list .container-status:last-child { margin-bottom: 0 !important; }
+.point-list .container-update { font-size: .72rem; }
+.material-badge { background: var(--eco-muted); color: var(--eco-secondary); padding: .5rem .65rem; font-weight: 600; white-space: normal; }
+.schedule-list { list-style: none; padding-left: 0; font-size: .86rem; color: var(--eco-gray); }
+.container-status { background: var(--eco-background); border: 1px solid var(--eco-border); border-radius: .8rem; padding: 1rem; }
+.status-badge { padding: .45rem .6rem; white-space: normal; line-height: 1.3; }
+.state-disponible { background: var(--eco-success) !important; color: var(--eco-surface) !important; }
+.state-medio { background: var(--eco-blue) !important; color: var(--eco-surface) !important; }
+.state-casi { background: var(--eco-warning) !important; color: var(--eco-warning-text) !important; }
+.state-lleno { background: var(--eco-danger) !important; color: var(--eco-surface) !important; }
+.state-neutral { background: var(--eco-gray) !important; color: var(--eco-surface) !important; }
+.eco-progress { height: .55rem; border-radius: 1rem; background: var(--eco-border); }
+.eco-progress .progress-bar { transition: width .4s ease; }
+.metric-card .card-body { padding: 1.2rem; }
+.metric-value { font-size: 2rem; font-weight: 750; line-height: 1.25; margin: .75rem 0 .25rem; }
+.metric-label { font-size: .85rem; font-weight: 600; }
+.metric-note { color: var(--eco-gray); font-size: .75rem; }
+.admin-card { height: 100%; }
+.admin-card .card-body { display: flex; flex-direction: column; align-items: flex-start; gap: 1rem; height: 100%; }
+.admin-card h2 { font-size: 1.25rem; margin: 0; }
+.admin-card p { color: var(--eco-gray); flex: 1; margin: 0; }
+.table-card { overflow: hidden; }
+.table-card .table { margin-bottom: 0; }
+.table { --bs-table-bg: var(--eco-surface); --bs-table-color: var(--eco-text); --bs-table-striped-bg: var(--eco-background); --bs-table-border-color: var(--eco-border); }
+.table > :not(caption) > * > * { padding: 1rem; vertical-align: middle; }
+.table thead th { background: var(--eco-muted); color: var(--eco-secondary); font-size: .78rem; letter-spacing: .025em; }
+.table td { font-size: .9rem; overflow-wrap: anywhere; }
+.table .progress { min-width: 95px; margin-top: .45rem; }
+.table-responsive { max-width: 100%; }
+.alert-active td:first-child { border-left: 4px solid var(--eco-danger); }
+.alert-active .alert-message { color: var(--eco-danger); font-weight: 650; }
+.action-cell { min-width: 160px; }
+.pagination-links { display: flex; gap: .75rem; margin-top: 1.25rem; }
+.login-layout { display: flex; justify-content: center; align-items: center; min-height: 65vh; }
+.login-card { width: 100%; max-width: 460px; }
+.login-card .card-body { padding: 2.25rem; }
+.login-card h1 { font-size: 1.8rem; font-weight: 750; }
+.list-group-item { background: var(--eco-surface); border-color: var(--eco-border); padding: 1rem; }
+@media (min-width: 1200px) { .app-main { max-width: 1480px; } }
+@media (min-width: 1200px) {
+    .public-layout .public-map-column { width: 65%; }
+    .public-layout .public-points-column { width: 35%; }
+}
+@media (max-width: 767.98px) {
+    .public-filter { grid-template-columns: minmax(0, 1fr); gap: .65rem; }
+    .public-filter .filter-actions { flex-direction: column; }
+    .public-filter .filter-actions .btn { width: 100%; }
+}
+@media (max-width: 1199.98px) { .map-card { position: static; } }
+@media (max-width: 991.98px) { .navbar-collapse { padding: 1rem 0 .5rem; } .nav-session { margin-top: .5rem; } }
+@media (max-width: 575.98px) {
+    .navbar { min-height: 70px; }
+    .hero-ecovaldivia { min-height: 440px; border-radius: 1rem; }
+    .hero-ecovaldivia .container { padding: 1.5rem; }
+    .hero-benefits { gap: .5rem; }
+    .filter-actions { flex-direction: column; }
+    .filter-actions .btn { width: 100%; }
+    .card-body, .map-card .card-body, .login-card .card-body { padding: 1.1rem; }
+    .page-heading .btn { width: 100%; }
+    .metric-value { font-size: 1.7rem; }
+    .list-group-item { flex-wrap: wrap; gap: .75rem; }
+    .brand { font-size: 1.3rem; }
+}
+@media (prefers-reduced-motion: reduce) { .eco-progress .progress-bar { transition: none; } }
+
+
+/* =========================================================
+   Fondo ambiental decorativo EcoValdivia
+   ========================================================= */
+
+body.ecovaldvia-bg {
+    position: relative;
+    min-height: 100vh;
+    overflow-x: hidden;
+
+    background:
+        radial-gradient(
+            circle at 8% 15%,
+            rgba(92, 174, 108, 0.3),
+            transparent 24rem
+        ),
+        radial-gradient(
+            circle at 94% 78%,
+            rgba(139, 201, 139, 0.15),
+            transparent 28rem
+        ),
+        #f5f8f4;
 }
 
-.brand {
-    font-size: 1.5rem;
-    font-weight: 700;
-    text-decoration: none;
+/* Mancha vegetal superior izquierda */
+body.ecovaldvia-bg::before {
+    content: "";
+    position: fixed;
+    top: 7rem;
+    left: -8rem;
+
+    width: 26rem;
+    height: 26rem;
+
+    background:
+        radial-gradient(
+            ellipse at center,
+            rgba(82, 156, 96, 0.25) 0%,
+            rgba(112, 183, 122, 0.14) 38%,
+            rgba(112, 183, 122, 0) 72%
+        );
+
+    filter: blur(24px);
+    transform: rotate(-18deg);
+
+    pointer-events: none;
+    z-index: 0;
 }
 
-.hero-ecovaldivia {
-    min-height: 420px;
-    display: flex;
-    align-items: center;
+/* Mancha vegetal inferior derecha */
+body.ecovaldvia-bg::after {
+    content: "";
+    position: fixed;
+    right: -10rem;
+    bottom: -6rem;
+
+    width: 32rem;
+    height: 32rem;
+
+    background:
+        radial-gradient(
+            ellipse at center,
+            rgba(84, 154, 95, 0.22) 0%,
+            rgba(126, 193, 132, 0.12) 42%,
+            rgba(126, 193, 132, 0) 74%
+        );
+
+    filter: blur(28px);
+    transform: rotate(22deg);
+
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Mantiene la interfaz sobre el fondo decorativo */
+.navbar,
+main,
+footer {
+    position: relative;
+    z-index: 1;
+}
+
+@keyframes ecoFloatLeft {
+    0% {
+        transform: translate(0, 0) rotate(-18deg) scale(1);
+        opacity: 0.75;
+    }
+
+    50% {
+        transform: translate(320px, 90px) rotate(-6deg) scale(1.18);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translate(0, 0) rotate(-18deg) scale(1);
+        opacity: 0.75;
+    }
+}
+
+@keyframes ecoFloatRight {
+    0% {
+        transform: translate(0, 0) rotate(22deg) scale(1);
+        opacity: 0.75;
+    }
+
+    50% {
+        transform: translate(-320px, -100px) rotate(8deg) scale(1.20);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translate(0, 0) rotate(22deg) scale(1);
+        opacity: 0.75;
+    }
+}
+
+body.ecovaldvia-bg::before {
+    animation: ecoFloatLeft 6s ease-in-out infinite;
+}
+
+body.ecovaldvia-bg::after {
+    animation: ecoFloatRight 6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.ecovaldvia-bg::before,
+    body.ecovaldvia-bg::after {
+        animation: none;
+    }
+}
+
+/* =========================================================
+   Navbar estilo EcoValdivia moderno
+   ========================================================= */
+
+.navbar {
+    background: rgba(255, 255, 255, 0.96) !important;
+    border-bottom: 1px solid rgba(20, 80, 50, 0.08);
+    box-shadow: 0 4px 18px rgba(20, 70, 45, 0.06);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.navbar .navbar-brand {
+    color: #143d2b !important;
+    font-weight: 800;
+    font-size: 1.45rem;
+    letter-spacing: -0.02em;
+}
+
+.navbar .nav-link {
+    color: #42554b !important;
+    font-weight: 600;
+    border-radius: 10px;
+    padding: 0.55rem 0.8rem !important;
+    transition:
+        color 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.navbar .nav-link:hover,
+.navbar .nav-link:focus {
+    color: #117847 !important;
+    background: rgba(17, 120, 71, 0.08);
+}
+
+.navbar .nav-link.active {
+    color: #08743f !important;
+    background: rgba(17, 120, 71, 0.10);
+}
+
+.navbar .navbar-toggler {
+    border-color: rgba(20, 70, 45, 0.18);
+}
+
+.navbar .navbar-toggler:focus {
+    box-shadow: 0 0 0 0.2rem rgba(17, 120, 71, 0.15);
+}
+
+.navbar .btn-primary,
+.navbar .btn-success {
+    background: #087847;
+    border-color: #087847;
     color: white;
-    background-image:
-        linear-gradient(rgba(10, 45, 30, 0.58), rgba(10, 45, 30, 0.58)),
-        url("../img/valdivia-fondo.png");
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    border-radius: 10px;
+    font-weight: 700;
+    padding: 0.55rem 1rem;
+    box-shadow: 0 4px 12px rgba(8, 120, 71, 0.16);
+}
+
+.navbar .btn-primary:hover,
+.navbar .btn-success:hover {
+    background: #06683d;
+    border-color: #06683d;
+}
+
+/* Ajuste fino de la navbar */
+.site-header {
+    background: rgba(248, 251, 247, 0.96);
+    border-bottom: 1px solid rgba(20, 80, 50, 0.06);
+    box-shadow: 0 3px 14px rgba(20, 70, 45, 0.05);
+}
+
+
+.navbar {
+    min-height: 72px;
+    padding-top: 0.65rem;
+    padding-bottom: 0.65rem;
+}
+
+/* Acerca ligeramente el hero a la navbar */
+.app-main {
+    padding-top: 1.5rem !important;
+}
+
+/* Hace que el filtro se parezca más al mockup */
+.filter-panel {
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid rgba(20, 80, 50, 0.07);
+    box-shadow: 0 10px 28px rgba(20, 70, 45, 0.07);
+    border-radius: 18px;
 }

@@ -1,0 +1,25 @@
+{% macro icon(nombre, clase='') -%}
+{% set trazos = {
+    'hoja': 'M20 4C10 3 3 7 4 14c1 6 8 7 12 3 3-3 4-8 4-13ZM5 19 16 8',
+    'mapa': 'm3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3V6Zm6-3v15m6-12v15',
+    'panel': 'M3 3h7v7H3V3Zm11 0h7v7h-7V3ZM3 14h7v7H3v-7Zm11 0h7v7h-7v-7Z',
+    'alerta': 'm12 3 10 18H2L12 3Zm0 6v5m0 3v1',
+    'reloj': 'M12 8v4l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z',
+    'material': 'm12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5',
+    'sensor': 'M5 8a10 10 0 0 1 14 0M8 11a6 6 0 0 1 8 0m-5 4h2m-1 3v2',
+    'personas': 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m20 0v-2a4 4 0 0 0-3-4M9 3a4 4 0 1 1 0 8 4 4 0 0 1 0-8Zm8 1a4 4 0 0 1 0 7',
+    'flecha': 'M5 12h14m-6-6 6 6-6 6',
+    'candado': 'M5 11h14v10H5V11Zm3 0V7a4 4 0 0 1 8 0v4m-4 4v2'
+} %}
+<svg class="eco-icon {{ clase }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="{{ trazos.get(nombre, trazos['hoja']) }}"/></svg>
+{%- endmacro %}
+
+{% macro badge(estado) -%}
+<span class="badge status-badge {{ {'Disponible': 'state-disponible', 'Medio': 'state-medio', 'Casi lleno': 'state-casi', 'Lleno': 'state-lleno'}.get(estado, 'state-neutral') }}">{{ estado or 'Sin estado' }}</span>
+{%- endmacro %}
+
+{% macro progress(porcentaje, estado) -%}
+<div class="progress eco-progress" role="progressbar" aria-label="Porcentaje de llenado" aria-valuemin="0" aria-valuemax="100" {% if porcentaje is not none %}aria-valuenow="{{ porcentaje }}"{% else %}aria-valuetext="Sin datos"{% endif %} data-campo="progreso">
+    <div class="progress-bar {{ {'Disponible': 'state-disponible', 'Medio': 'state-medio', 'Casi lleno': 'state-casi', 'Lleno': 'state-lleno'}.get(estado, 'state-neutral') }}" style="width: {{ porcentaje if porcentaje is not none else 0 }}%"></div>
+</div>
+{%- endmacro %}

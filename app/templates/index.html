@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from '_visual.html' import icon, progress %}
 
 {% block head_extra %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
@@ -10,38 +11,45 @@
 <section class="hero-ecovaldivia">
     <div class="container py-5">
         <div class="row">
-            <div class="col-lg-7 col-md-9">
+            <div class="col-lg-8 col-md-10 hero-copy">
+                <p class="eyebrow mb-3">Reciclar conecta nuestra ciudad</p>
                 <h1 class="display-4 fw-bold">EcoValdivia</h1>
 
                 <p class="lead">
-                    Sistema inteligente de apoyo al reciclaje ciudadano
+                    Un pequeño gesto. Una ciudad más verde.
                 </p>
 
                 <p>
-                    Encuentra puntos de reciclaje y consulta su estado.
+                    Encuentra puntos de reciclaje, consulta su estado en tiempo real y contribuye a una Valdivia más limpia y sustentable.
                 </p>
+                <div class="hero-benefits mt-4">
+                    <span>{{ icon('hoja') }} Ciudad más limpia</span>
+                    <span>{{ icon('sensor') }} Información en tiempo real</span>
+                    <span>{{ icon('personas') }} Comunidad sustentable</span>
+                </div>
             </div>
         </div>
     </div>
 </section>
 
-<p class="text-secondary">Los puntos identificados como demostración contienen ubicaciones, horarios y estados ilustrativos; no son información oficial.</p>
+<p class="small text-secondary">Los puntos identificados como demostración contienen ubicaciones, horarios y estados ilustrativos; no son información oficial.</p>
 
-<form method="get" action="{{ url_for('public.index') }}" class="row g-3 align-items-end mb-4">
-    <div class="col-sm-8 col-md-6">
-        <label for="material" class="form-label">Filtrar por material</label>
+<section class="card filter-card" aria-label="Filtrar puntos de reciclaje">
+<div class="card-body">
+<form method="get" action="{{ url_for('public.index') }}" class="public-filter">
+        <label for="material" class="form-label mb-0">Filtrar por material</label>
         <select name="material" id="material" class="form-select">
             <option value="">Todos los materiales</option>
             {% for material in materiales %}
             <option value="{{ material.id }}" {% if material.id == material_id %}selected{% endif %}>{{ material.nombre }}</option>
             {% endfor %}
         </select>
-    </div>
-    <div class="col-auto">
+    <div class="filter-actions">
         <button type="submit" class="btn btn-success">Filtrar</button>
         <a href="{{ url_for('public.index') }}" class="btn btn-outline-secondary">Limpiar</a>
     </div>
 </form>
+</div></section>
 
 {% if error_filtro %}
 <p class="alert alert-warning" role="alert">{{ error_filtro }}</p>
@@ -49,40 +57,56 @@
 <p class="alert alert-info" role="status">{% if material_id %}No hay puntos activos que acepten el material seleccionado.{% else %}No hay puntos de reciclaje activos disponibles.{% endif %}</p>
 {% endif %}
 
-<section class="mb-4" aria-labelledby="mapa-titulo">
+<div class="row g-4 public-layout">
+<div class="col-12 col-xl-8 public-map-column">
+<section class="card map-card" aria-labelledby="mapa-titulo">
+<div class="card-body">
+    <div class="d-flex align-items-center gap-3 mb-3"><span class="icon-tile">{{ icon('mapa') }}</span><div>
     <h2 id="mapa-titulo" class="h4">Mapa de puntos de reciclaje</h2>
-    <p id="mapa-descripcion">Selecciona un marcador para consultar materiales y llenado. El mapa muestra los mismos resultados del filtro; las tarjetas también incluyen puntos sin coordenadas.</p>
+    <p id="mapa-descripcion" class="small text-secondary mb-0">Encuentra tu punto más cercano. Selecciona un marcador para consultar materiales y llenado.</p>
+    </div></div>
     <p id="mapa-aviso" class="small text-secondary" role="status"></p>
-    <div id="mapa-publico" data-endpoint="{{ url_for('public.datos') }}" class="mapa-publico border rounded" role="region" aria-label="Mapa interactivo de puntos de reciclaje" aria-describedby="mapa-descripcion"></div>
+    <div id="mapa-publico" data-endpoint="{{ url_for('public.datos') }}" class="mapa-publico border rounded-3" role="region" aria-label="Mapa interactivo de puntos de reciclaje" aria-describedby="mapa-descripcion"></div>
     <noscript><p>Activa JavaScript para consultar el mapa. Puedes consultar los puntos en las tarjetas siguientes.</p></noscript>
-</section>
+</div></section>
+</div>
 <script id="datos-mapa-publico" type="application/json">{{ puntos_mapa|tojson }}</script>
 
-<div class="row g-4">
+<div class="col-12 col-xl-4 public-points-column">
+<div class="point-list-heading"><h2 class="h5 mb-0">Puntos de reciclaje</h2><span class="badge material-badge" aria-label="{{ puntos|length }} resultados">{{ puntos|length }}</span></div>
+<div class="point-list">
 {% for punto in puntos %}
-    <div class="col-12 col-lg-6">
+    <div>
         <article class="card h-100" data-punto-id="{{ punto.id }}">
             <div class="card-body">
                 <h2 class="h4 card-title">{{ punto.nombre }}</h2>
-                <p>{{ punto.direccion }}</p>
-                <h3 class="h6">Materiales aceptados</h3>
-                <ul>
+                <p class="small text-secondary point-address">{{ icon('mapa') }} {{ punto.direccion }}</p>
+                <h3 class="visually-hidden">Materiales aceptados</h3>
+                <div class="d-flex flex-wrap gap-1 mb-2">
+                    {% for material in punto.materiales|sort(attribute='nombre') %}
+                    <span class="badge material-badge">{{ material.nombre }}</span>
+                    {% else %}<span class="small text-secondary">Sin materiales registrados.</span>{% endfor %}
+                </div>
+                <details class="small mb-2"><summary>Cómo preparar tus materiales</summary><ul class="mt-2">
                     {% for material in punto.materiales|sort(attribute='nombre') %}
                     <li><strong>{{ material.nombre }}</strong>{% if material.instrucciones %}: {{ material.instrucciones }}{% endif %}</li>
                     {% else %}<li>Sin materiales registrados.</li>{% endfor %}
-                </ul>
-                <h3 class="h6">Horarios</h3>
-                <ul>
-                    {% for horario in punto.horarios|sort(attribute='hora_inicio')|sort(attribute='dia_semana') %}
-                    <li>{{ dias_semana[horario.dia_semana] }}: {{ horario.hora_inicio.strftime('%H:%M') }}–{{ horario.hora_fin.strftime('%H:%M') }}</li>
+                </ul></details>
+                <h3 class="visually-hidden">Horarios</h3>
+                <ul class="schedule-list">
+                    {% for inicio in punto.horarios|groupby('hora_inicio') %}
+                    {% for fin in inicio.list|groupby('hora_fin') %}
+                    <li>{{ icon('reloj') }} {% for horario in fin.list|sort(attribute='dia_semana') %}{{ dias_semana[horario.dia_semana][:3] }}{% if not loop.last %}, {% endif %}{% endfor %}: {{ inicio.grouper.strftime('%H:%M') }}–{{ fin.grouper.strftime('%H:%M') }}</li>
+                    {% endfor %}
                     {% else %}<li>Sin horarios registrados.</li>{% endfor %}
                 </ul>
-                <h3 class="h6">Contenedores</h3>
+                <h3 class="visually-hidden">Contenedores</h3>
                 {% for contenedor in punto.contenedores|selectattr('activo')|sort(attribute='codigo') %}
-                <div class="border rounded p-3 mb-2" data-contenedor-codigo="{{ contenedor.codigo }}">
-                    <p class="mb-1"><strong>{{ contenedor.codigo }}</strong> · <span data-campo="estado">{{ contenedor.estado }}</span></p>
-                    <p class="mb-1">Llenado: <span data-campo="porcentaje">{% if contenedor.porcentaje_llenado is not none %}{{ contenedor.porcentaje_llenado|round(1) }}%{% else %}Sin datos{% endif %}</span></p>
-                    <p class="small text-secondary mb-0">Última actualización: <span data-campo="fecha">{% if contenedor.ultima_actualizacion %}{{ contenedor.ultima_actualizacion.strftime('%d/%m/%Y %H:%M') }}{% else %}Sin actualización registrada{% endif %}</span></p>
+                <div class="container-status mb-2" data-contenedor-codigo="{{ contenedor.codigo }}">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2"><strong class="small">{{ contenedor.codigo }}</strong><span class="badge status-badge {{ {'Disponible': 'state-disponible', 'Medio': 'state-medio', 'Casi lleno': 'state-casi', 'Lleno': 'state-lleno'}.get(contenedor.estado, 'state-neutral') }}" data-campo="estado">{{ contenedor.estado }}</span></div>
+                    <p class="small mb-2">Llenado: <strong data-campo="porcentaje">{% if contenedor.porcentaje_llenado is not none %}{{ contenedor.porcentaje_llenado|round(1) }}%{% else %}Sin datos{% endif %}</strong></p>
+                    {{ progress(contenedor.porcentaje_llenado, contenedor.estado) }}
+                    <p class="small text-secondary mt-2 mb-0 container-update">Última actualización: <span data-campo="fecha">{% if contenedor.ultima_actualizacion %}{{ contenedor.ultima_actualizacion.strftime('%d/%m/%Y %H:%M') }}{% else %}Sin actualización registrada{% endif %}</span></p>
                 </div>
                 {% else %}<p>Sin contenedores activos registrados.</p>{% endfor %}
             </div>
@@ -90,6 +114,7 @@
     </div>
 {% endfor %}
 </div>
+</div></div>
 {% endblock %}
 
 {% block scripts_extra %}
