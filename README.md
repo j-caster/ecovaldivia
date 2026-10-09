@@ -139,8 +139,8 @@ Terminal 2, desde la misma raíz, configurar **localmente** antes de iniciar el 
 $env:ECOV_UDP_HOST = "0.0.0.0"
 $env:ECOV_UDP_PORT = "4211"
 $env:ECOV_UDP_DEVICE_ID = "DEMO-IOT-01"
-$env:ECOV_UDP_HMAC_KEY_HEX = "<REEMPLAZAR_LOCALMENTE_POR_64_CARACTERES_HEXADECIMALES>"
-$env:ECOV_UDP_AEAD_KEY_HEX = "<REEMPLAZAR_LOCALMENTE_POR_64_CARACTERES_HEXADECIMALES>"
+$env:ECOV_UDP_HMAC_KEY_HEX = "<CLAVE_HMAC_LOCAL_DE_64_HEX>"
+$env:ECOV_UDP_AEAD_KEY_HEX = "<CLAVE_AEAD_LOCAL_DE_64_HEX"
 .\.venv\Scripts\python.exe udp_worker.py
 ```
 
