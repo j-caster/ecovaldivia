@@ -3,6 +3,7 @@ from flask import Flask
 from config import Config
 from app.extensions import db, login_manager
 from app.services.security import csrf_token
+from app.services.fecha_service import fecha_chile
 
 
 def create_app(config_class=Config):
@@ -12,6 +13,7 @@ def create_app(config_class=Config):
     db.init_app(app)
     login_manager.init_app(app)
     app.jinja_env.globals["csrf_token"] = csrf_token
+    app.jinja_env.filters["fecha_chile"] = fecha_chile
 
     from app import models
 

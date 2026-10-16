@@ -2,6 +2,23 @@
 
 (() => {
     const INTERVALO_ACTUALIZACION_MS = 5000;
+    // Mismo formato y zona que el render del servidor (filtro fecha_chile).
+    const FORMATO_CHILE = new Intl.DateTimeFormat("es-CL", {
+        timeZone: "America/Santiago", day: "2-digit", month: "2-digit", year: "numeric",
+        hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23"
+    });
+
+    function fechaChile(valor) {
+        if (!valor) return null;
+        const fecha = new Date(valor);
+        if (Number.isNaN(fecha.getTime())) return null;
+        const partes = {};
+        for (const parte of FORMATO_CHILE.formatToParts(fecha)) {
+            partes[parte.type] = parte.value;
+        }
+        return `${partes.day}-${partes.month}-${partes.year} ${partes.hour}:${partes.minute}:${partes.second}`;
+    }
+
     const contenedor = document.getElementById("mapa-publico");
     const datos = document.getElementById("datos-mapa-publico");
     const aviso = document.getElementById("mapa-aviso");
@@ -128,9 +145,8 @@
                     progreso.firstElementChild.style.width = `${c.porcentaje_llenado ?? 0}%`;
                     progreso.firstElementChild.className = `progress-bar ${colores[c.estado] || "state-neutral"}`;
                 }
-                const fecha = c.ultima_actualizacion ? new Date(c.ultima_actualizacion) : null;
-                bloque.querySelector('[data-campo="fecha"]').textContent = fecha && !Number.isNaN(fecha.getTime())
-                    ? fecha.toLocaleString("es-CL", {timeZone: "UTC"}) : "Sin actualización registrada";
+                bloque.querySelector('[data-campo="fecha"]').textContent =
+                    fechaChile(c.ultima_actualizacion) || "Sin actualización registrada";
             }
         }
     }

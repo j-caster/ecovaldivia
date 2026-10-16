@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}Usuarios · EcoValdivia{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow mb-2">Administración</p><h1>Usuarios</h1><p>Gestiona las cuentas y el acceso del equipo.</p></div><a class="btn btn-success" href="{{ url_for('admin.usuario_formulario') }}">Crear usuario</a></div>
+<div class="card"><div class="table-responsive"><table class="table align-middle mb-0">
+<caption class="visually-hidden">Cuentas del equipo de EcoValdivia</caption>
+<thead><tr><th scope="col">Nombre</th><th scope="col">Username</th><th scope="col">Rol</th><th scope="col">Estado</th><th scope="col">Acciones</th></tr></thead>
+<tbody>{% for usuario in usuarios %}<tr><td>{{ usuario.nombre }}{% if usuario.id == current_user.id %} <small>(Tu cuenta)</small>{% endif %}</td><td>{{ usuario.username }}</td><td>{{ usuario.rol|capitalize }}</td><td><span class="badge {{ 'text-bg-success' if usuario.activo else 'text-bg-secondary' }}">{{ 'Activo' if usuario.activo else 'Inactivo' }}</span></td><td><a class="btn btn-sm btn-outline-success" href="{{ url_for('admin.usuario_formulario', usuario_id=usuario.id) }}" aria-label="Editar usuario {{ usuario.username }}">Editar</a></td></tr>
+{% else %}<tr><td colspan="5">No hay usuarios registrados.</td></tr>{% endfor %}</tbody>
+</table></div></div>
+<a class="btn btn-outline-secondary mt-3" href="{{ url_for('admin.index') }}">Volver a administración</a>
+{% endblock %}

@@ -1,4 +1,4 @@
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, flash, redirect, render_template, request, url_for, abort
 from flask_login import current_user
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import joinedload
@@ -20,12 +20,20 @@ def proteger_operacion():
 
 @operacion_bp.get("/alertas")
 def alertas():
-    pagina = db.paginate(db.select(Alerta).options(
+    filtro = request.args.get("estado", "todas")
+    if filtro not in ("todas", "activas"):
+        abort(400, description="Filtro de alertas inválido.")
+    total_activas = db.session.scalar(db.select(db.func.count()).select_from(Alerta).where(Alerta.activa.is_(True)))
+    consulta = db.select(Alerta).options(
         joinedload(Alerta.contenedor).joinedload(Contenedor.punto)).order_by(
-        Alerta.activa.desc(), Alerta.creada_en.desc(), Alerta.id.desc()), per_page=50)
+        Alerta.activa.desc(), Alerta.creada_en.desc(), Alerta.id.desc())
+    if filtro == "activas":
+        consulta = consulta.where(Alerta.activa.is_(True))
+    pagina = db.paginate(consulta, per_page=50)
     contenedores = db.session.scalars(db.select(Contenedor).where(
         Contenedor.activo.is_(True)).order_by(Contenedor.codigo)).all()
-    return render_template("operacion/alertas.html", pagina=pagina, contenedores=contenedores)
+    return render_template("operacion/alertas.html", pagina=pagina, contenedores=contenedores,
+                           total_activas=total_activas, filtro=filtro)
 
 
 @operacion_bp.post("/contenedores/<int:contenedor_id>/vaciado")

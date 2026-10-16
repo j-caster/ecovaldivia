@@ -2,13 +2,13 @@
 {% from '_visual.html' import icon %}
 {% block title %}Historial operacional · EcoValdivia{% endblock %}
 {% block content %}
-<div class="page-heading"><div><p class="eyebrow mb-2">Actividad del equipo</p><h1>Historial operacional</h1><p>Vaciados y acciones registradas. Fechas en UTC.</p></div>
+<div class="page-heading"><div><p class="eyebrow mb-2">Actividad del equipo</p><h1>Historial operacional</h1><p>Vaciados y acciones registradas. Fechas en hora local de Chile.</p></div>
 <a class="btn btn-outline-success" href="{{ url_for('operacion.alertas') }}">{{ icon('alerta') }} Ver alertas</a></div>
 <div class="card table-card"><div class="table-responsive"><table class="table table-striped"><caption class="visually-hidden">Eventos operacionales registrados por el equipo</caption>
 <thead><tr><th>Fecha</th><th>Contenedor</th><th>Tipo</th><th>Usuario</th><th>Descripción</th></tr></thead>
 <tbody>
 {% for evento in pagina.items %}
-<tr><td>{{ evento.creado_en.strftime('%Y-%m-%d %H:%M:%S') }}</td><td class="fw-semibold">{{ evento.contenedor.codigo }}</td><td><span class="badge material-badge">{{ evento.tipo }}</span></td><td>{{ evento.usuario.nombre }}</td><td>{{ evento.descripcion }}</td></tr>
+<tr><td>{{ evento.creado_en|fecha_chile }}</td><td class="fw-semibold">{{ evento.contenedor.codigo }}</td><td><span class="badge material-badge">{{ evento.tipo }}</span></td><td>{{ evento.usuario.nombre }}</td><td>{{ evento.descripcion }}</td></tr>
 {% else %}<tr><td colspan="5">No hay eventos operacionales.</td></tr>{% endfor %}
 </tbody></table></div></div>
 <div class="pagination-links">

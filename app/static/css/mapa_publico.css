@@ -1,8 +1,39 @@
+/* Mapa público: marco propio y ventanas emergentes con la identidad del sitio */
+
 .mapa-publico {
     width: 100%;
     height: 480px;
     max-width: 100%;
+    overflow: hidden;
+    border: 1px solid var(--eco-border) !important;
+    border-radius: 18px;
     background-color: var(--eco-muted);
+    z-index: 0;
+}
+
+.mapa-publico.leaflet-container {
+    font-family: var(--eco-font-body);
+}
+
+.mapa-publico .leaflet-popup-content-wrapper {
+    border: 1px solid var(--eco-border);
+    border-radius: 16px 16px 16px 6px;
+    box-shadow: var(--eco-shadow);
+}
+
+.mapa-publico .leaflet-popup-content {
+    margin: .9rem 1.1rem;
+}
+
+.mapa-publico .leaflet-popup-tip {
+    box-shadow: none;
+}
+
+.mapa-publico .leaflet-bar,
+.mapa-publico .leaflet-bar a {
+    border-radius: 12px;
+    border-color: var(--eco-border);
+    color: var(--eco-forest);
 }
 
 .mapa-publico .mapa-popup {
@@ -11,8 +42,16 @@
     line-height: 1.5;
 }
 
+.mapa-publico .mapa-popup h3 {
+    margin: 0 0 .2rem;
+    font-family: var(--eco-font-display);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
 .mapa-publico .mapa-popup p {
-    margin: 0.5rem 0;
+    margin: .35rem 0;
+    font-size: .85rem;
 }
 
 @media (max-width: 767.98px) {

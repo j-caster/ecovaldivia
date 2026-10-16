@@ -1,16 +1,31 @@
 {% extends "base.html" %}
 {% block title %}Simular medición · EcoValdivia{% endblock %}
 {% block content %}
-<h1 class="h3">Simular medición</h1>
+<div class="page-heading">
+    <div>
+        <p class="eyebrow mb-2">Telemetría IoT</p>
+        <h1>Simular medición</h1>
+        <p>Elige el dispositivo del punto y contenedor que quieres probar. Cada contenedor tiene su propio identificador.</p>
+    </div>
+    <a class="btn btn-outline-success" href="{{ url_for('admin.puntos') }}">Gestionar puntos y contenedores</a>
+</div>
 <form method="post" class="row g-3">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="col-md-6">
-        <label for="dispositivo" class="form-label">Dispositivo</label>
+        <label for="dispositivo" class="form-label">Punto, contenedor y dispositivo</label>
         <select id="dispositivo" name="dispositivo_identificador" class="form-select" required>
-            {% for dispositivo in dispositivos %}
-            <option value="{{ dispositivo.identificador }}" {% if datos.get('dispositivo_identificador') == dispositivo.identificador %}selected{% endif %}>{{ dispositivo.identificador }} · {{ dispositivo.contenedor.codigo }}</option>
+            <option value="">Selecciona un dispositivo</option>
+            {% for nombre_punto, grupo in dispositivos|groupby('contenedor.punto.nombre') %}
+            <optgroup label="{{ nombre_punto }}">
+                {% for dispositivo in grupo %}
+                <option value="{{ dispositivo.identificador }}" {% if preseleccionado == dispositivo.id or datos.get('dispositivo_identificador') == dispositivo.identificador %}selected{% endif %}>
+                    {{ dispositivo.identificador }} · {{ dispositivo.contenedor.codigo }}{% if dispositivo.contenedor.material %} ({{ dispositivo.contenedor.material.nombre }}){% endif %}
+                </option>
+                {% endfor %}
+            </optgroup>
             {% endfor %}
         </select>
+        <p class="form-text">El identificador es el ID único que envía el dispositivo real o esta simulación. Los sensores se miden en centímetros y de ahí se calcula el porcentaje de llenado.</p>
     </div>
     {% for campo, etiqueta in [('sensor1_cm', 'Sensor 1 (cm)'), ('sensor2_cm', 'Sensor 2 (cm)')] %}
     <div class="col-md-3">
@@ -42,10 +57,23 @@
     {% endfor %}
     <div><button class="btn btn-success" {% if not dispositivos %}disabled{% endif %}>Guardar simulación</button></div>
 </form>
-<h2 class="h5 mt-4">Historial por dispositivo</h2>
-<ul>
-    {% for dispositivo in dispositivos %}
-    <li><a href="{{ url_for('admin.historial_mediciones', dispositivo_id=dispositivo.id) }}">{{ dispositivo.identificador }} · {{ dispositivo.contenedor.codigo }}</a></li>
-    {% else %}<li>No hay dispositivos activos. Carga los datos de demostración.</li>{% endfor %}
-</ul>
+<h2 class="h5 mt-4 mb-3">Historial por dispositivo</h2>
+<div class="card table-card"><div class="table-responsive">
+<table class="table table-striped align-middle">
+<caption class="visually-hidden">Dispositivos activos y acceso a su historial de mediciones</caption>
+<thead><tr><th>Identificador</th><th>Punto</th><th>Contenedor</th><th>Material</th><th>Última lectura</th><th>Historial</th></tr></thead>
+<tbody>
+{% for dispositivo in dispositivos %}
+<tr>
+    <td><code>{{ dispositivo.identificador }}</code></td>
+    <td>{{ dispositivo.contenedor.punto.nombre }}</td>
+    <td>{{ dispositivo.contenedor.codigo }}</td>
+    <td>{% if dispositivo.contenedor.material %}<span class="badge material-badge">{{ dispositivo.contenedor.material.nombre }}</span>{% else %}<span class="small text-secondary">Sin material</span>{% endif %}</td>
+    <td>{{ dispositivo.ultima_actualizacion|fecha_chile }}</td>
+    <td><a class="btn btn-outline-success btn-sm" href="{{ url_for('admin.historial_mediciones', dispositivo_id=dispositivo.id) }}">Ver mediciones</a></td>
+</tr>
+{% else %}
+<tr><td colspan="6">No hay dispositivos activos. Crea un contenedor y vincula su dispositivo desde la edición del punto.</td></tr>
+{% endfor %}
+</tbody></table></div></div>
 {% endblock %}

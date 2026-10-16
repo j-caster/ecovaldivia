@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% from 'admin/_forms.html' import csrf %}
+{% block title %}Contenedor · EcoValdivia{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div>
+        <p class="eyebrow mb-2">Contenedor y dispositivo IoT</p>
+        <h1>Editar contenedor</h1>
+        <p>Punto: {{ contenedor.punto.nombre }}</p>
+    </div>
+    <a class="btn btn-outline-secondary" href="{{ url_for('admin.punto_formulario', punto_id=contenedor.punto_id) }}">Volver al punto</a>
+</div>
+<form method="post" class="col-lg-8">
+    {{ csrf() }}
+    <fieldset class="mb-4">
+        <legend class="fs-5">Contenedor</legend>
+        <div class="mb-3">
+            <label class="form-label" for="codigo">Código del contenedor</label>
+            <input class="form-control" id="codigo" name="codigo" maxlength="100" value="{{ contenedor.codigo }}" required>
+            <p class="form-text">Se usa en el mapa público y en el panel. Ejemplo: CONT-TEJA-VIDRIO-01.</p>
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="material_id">Material que recibe</label>
+            <select class="form-select" id="material_id" name="material_id">
+                <option value="">Sin material asignado</option>
+                {% for material in materiales %}<option value="{{ material.id }}" {% if contenedor.material_id == material.id %}selected{% endif %}>{{ material.nombre }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="activo" name="activo" value="1" {% if contenedor.activo %}checked{% endif %}>
+            <label class="form-check-label" for="activo">Contenedor activo (visible en el mapa público)</label>
+        </div>
+    </fieldset>
+    <fieldset class="mb-4">
+        <legend class="fs-5">Dispositivo IoT</legend>
+        <div class="mb-3">
+            <label class="form-label" for="identificador">Identificador único del dispositivo</label>
+            <input class="form-control" id="identificador" name="identificador" maxlength="100" value="{{ dispositivo.identificador if dispositivo else '' }}" required>
+            <p class="form-text">Debe ser único en todo el sistema: es el ID que enviará el equipo (Arduino) o la simulación. Ejemplo: ECO-TEJA-VIDRIO-01.</p>
+        </div>
+        <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="dispositivo_activo" name="dispositivo_activo" value="1" {% if dispositivo is none or dispositivo.activo %}checked{% endif %}>
+            <label class="form-check-label" for="dispositivo_activo">Dispositivo habilitado para reportar lecturas</label>
+        </div>
+        {% if dispositivo %}
+        <p class="small text-secondary mb-0">Última lectura recibida: {{ dispositivo.ultima_actualizacion|fecha_chile }}</p>
+        {% else %}
+        <p class="small text-secondary mb-0">Este contenedor no tiene un dispositivo activo: al guardar se creará uno.</p>
+        {% endif %}
+    </fieldset>
+    <button class="btn btn-success" type="submit">Guardar cambios</button>
+    <a class="btn btn-outline-success" href="{{ url_for('admin.simular_medicion', dispositivo=dispositivo.id) if dispositivo else url_for('admin.punto_formulario', punto_id=contenedor.punto_id) }}">Simular medición de este contenedor</a>
+</form>
+{% endblock %}

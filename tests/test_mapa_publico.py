@@ -46,7 +46,12 @@ class MapaPublicoTests(unittest.TestCase):
         self.assertIn('class="hero-ecovaldivia"', html)
         self.assertIn('id="material"', html)
         self.assertIn('id="mapa-publico"', html)
-        self.assertIn("leaflet@1.9.4", html)
+        # Las librerías se sirven desde el propio proyecto, sin depender de CDN.
+        self.assertIn("vendor/leaflet/leaflet.css", html)
+        self.assertIn("vendor/leaflet/leaflet.js", html)
+        self.assertIn("vendor/bootstrap/bootstrap.min.css", html)
+        for externo in ("cdn.jsdelivr.net", "unpkg.com", "fonts.googleapis.com"):
+            self.assertNotIn(externo, html)
         self.assertIn("js/mapa_publico.js", html)
         self.assertLess(html.index('id="material"'), html.index('id="mapa-publico"'))
         self.assertLess(html.index('id="mapa-publico"'), html.index('class="card h-100"'))

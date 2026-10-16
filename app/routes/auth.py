@@ -6,6 +6,7 @@ from app.extensions import db, login_manager
 from app.models import Usuario
 from app.services.security import roles_required, validar_csrf
 from app.services.panel_service import INTERVALO_PANEL_SEGUNDOS, datos_panel
+from app.services.fecha_service import fecha_chile
 
 auth_bp = Blueprint("auth", __name__)
 # Verificación equivalente para usernames desconocidos, sin revelar su existencia.
@@ -58,6 +59,9 @@ def panel():
 @auth_bp.get("/panel/datos")
 @roles_required("operador", "administrador")
 def panel_datos():
-    respuesta = jsonify(contenedores=datos_panel())
+    contenedores = datos_panel()
+    fechas_locales = {c["ultima_actualizacion"]: fecha_chile(c["ultima_actualizacion"])
+                     for c in contenedores if c["ultima_actualizacion"]}
+    respuesta = jsonify(contenedores=contenedores, fechas_locales=fechas_locales)
     respuesta.headers["Cache-Control"] = "no-store"
     return respuesta

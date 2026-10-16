@@ -37,6 +37,27 @@ def validar_material(datos):
     }
 
 
+def validar_contenedor(datos):
+    """Validar el contenedor y el identificador del dispositivo IoT que lo reporta.
+
+    El identificador lo escribe el administrador y debe ser único en el sistema.
+    """
+    resultado = {
+        "codigo": texto(datos, "codigo", "El código del contenedor", 100),
+        "identificador": texto(datos, "identificador", "El identificador del dispositivo IoT", 100),
+        "activo": datos.get("activo", "1") == "1",
+    }
+    material = (datos.get("material_id") or "").strip()
+    if material:
+        try:
+            resultado["material_id"] = int(material)
+        except (ValueError, TypeError):
+            raise ValueError("El material seleccionado no es válido.") from None
+    else:
+        resultado["material_id"] = None
+    return resultado
+
+
 def validar_horario(datos):
     try:
         dia = int(datos.get("dia_semana", ""))

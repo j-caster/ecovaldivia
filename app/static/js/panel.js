@@ -23,10 +23,11 @@
         return td;
     }
 
-    function mostrar(contenedores) {
+    function mostrar(contenedores, fechasLocales = {}) {
         const fragmento = document.createDocumentFragment();
         for (const c of contenedores) {
             const fila = document.createElement("tr");
+            fila.className = c.alerta ? "alert-active" : "";
             const porcentaje = celda(c.porcentaje === null ? "Sin datos" : `${c.porcentaje.toFixed(1)}%`);
             const progreso = document.createElement("div");
             progreso.className = "progress eco-progress";
@@ -46,7 +47,7 @@
                 porcentaje,
                 celda(c.estado, colores[c.estado] || "state-neutral"),
                 celda(c.modo || "Sin datos"), celda(c.compuerta || "Sin datos"),
-                celda(c.ultima_actualizacion || "Sin datos"),
+                celda(fechasLocales[c.ultima_actualizacion] || "Sin datos"),
                 celda(c.alerta || "Sin alerta", c.alerta ? "state-lleno" : null),
                 celda(c.conectividad, c.conectividad === "ONLINE" ? "state-disponible" : "state-neutral")
             );
@@ -71,6 +72,10 @@
             const elemento = document.getElementById(`resumen-${clave}`);
             if (elemento) elemento.textContent = String(valor);
         }
+        const alertaTexto = document.getElementById("panel-alertas-texto");
+        const alertaAviso = document.getElementById("panel-alertas-aviso");
+        if (alertaTexto) alertaTexto.textContent = `${resumen.alertas} ${resumen.alertas === 1 ? "contenedor con alerta activa" : "contenedores con alerta activa"}`;
+        if (alertaAviso) alertaAviso.className = `alert-summary mb-4${resumen.alertas ? " alert-summary-active" : ""}`;
     }
 
     async function actualizar() {
@@ -89,8 +94,8 @@
             }
             if (!respuesta.ok) throw new Error("No se pudo consultar el panel.");
             const datos = await respuesta.json();
-            mostrar(datos.contenedores);
-            aviso.textContent = "Panel actualizado automáticamente. Fechas en UTC.";
+            mostrar(datos.contenedores, datos.fechas_locales);
+            aviso.textContent = "Panel actualizado automáticamente. Fechas en hora local de Chile.";
         } catch {
             aviso.textContent = "No se pudo actualizar. Se conservan los datos anteriores; se reintentará.";
         } finally {

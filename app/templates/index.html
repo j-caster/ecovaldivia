@@ -1,38 +1,51 @@
 {% extends "base.html" %}
-{% from '_visual.html' import icon, progress %}
+{% from '_visual.html' import icon, progress, icono_material %}
 
 {% block head_extra %}
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
+{# Leaflet 1.9.4 servido localmente desde static/vendor/leaflet #}
+<link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet/leaflet.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/mapa_publico.css') }}">
 {% endblock %}
 
 {% block content %}
 
 <section class="hero-ecovaldivia">
-    <div class="container py-5">
-        <div class="row">
-            <div class="col-lg-8 col-md-10 hero-copy">
-                <p class="eyebrow mb-3">Reciclar conecta nuestra ciudad</p>
-                <h1 class="display-4 fw-bold">EcoValdivia</h1>
-
-                <p class="lead">
-                    Un pequeño gesto. Una ciudad más verde.
-                </p>
-
-                <p>
-                    Encuentra puntos de reciclaje, consulta su estado en tiempo real y contribuye a una Valdivia más limpia y sustentable.
-                </p>
-                <div class="hero-benefits mt-4">
-                    <span>{{ icon('hoja') }} Ciudad más limpia</span>
-                    <span>{{ icon('sensor') }} Información en tiempo real</span>
-                    <span>{{ icon('personas') }} Comunidad sustentable</span>
-                </div>
+    <div class="container hero-inner">
+        <div class="hero-copy">
+            <p class="eyebrow">Reciclar conecta nuestra ciudad</p>
+            <h1>EcoValdivia</h1>
+            <p class="hero-lead">Un pequeño gesto. Una ciudad más verde.</p>
+            <p class="hero-text">Encuentra puntos de reciclaje, consulta su estado en tiempo real y contribuye a una Valdivia más limpia y sustentable.</p>
+            <div class="hero-actions">
+                <a class="btn btn-lime" href="#mapa-titulo">{{ icon('ubicacion') }} Ver puntos en el mapa</a>
+                <a class="btn btn-ghost" href="#aprendamos">{{ icon('libro') }} Aprender a reciclar</a>
+            </div>
+            <div class="hero-benefits">
+                <span>{{ icon('hoja') }} Ciudad más limpia</span>
+                <span>{{ icon('sensor') }} Información en tiempo real</span>
+                <span>{{ icon('personas') }} Comunidad sustentable</span>
             </div>
         </div>
+        <div class="hero-sticker" aria-hidden="true">
+            <span class="hero-sticker-value">100%</span>
+            <span class="hero-sticker-label">reciclaje<br>ciudadano</span>
+        </div>
     </div>
+    <svg class="hero-wave" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 58c180-46 348 26 528 26s372-78 552-78 180 44 360 30v54H0V58Z" fill="currentColor"/></svg>
 </section>
 
-<p class="small text-secondary">Los puntos identificados como demostración contienen ubicaciones, horarios y estados ilustrativos; no son información oficial.</p>
+<section class="material-strip" aria-labelledby="material-strip-titulo">
+    <h2 id="material-strip-titulo" class="visually-hidden">Tipos de residuos que se pueden reciclar</h2>
+    <ul class="material-strip-list">
+        <li>{{ icon('papel') }}<span>Papel y cartón</span></li>
+        <li>{{ icon('botella') }}<span>Botellas PET</span></li>
+        <li>{{ icon('bolsa') }}<span>Plásticos</span></li>
+        <li>{{ icon('tetra') }}<span>Cartón para líquidos</span></li>
+        <li>{{ icon('lata') }}<span>Aluminio y hojalata</span></li>
+        <li>{{ icon('vidrio') }}<span>Vidrio</span></li>
+    </ul>
+    <p class="material-strip-note">{{ icon('flecha') }} <a href="#aprendamos">Conoce qué sí y qué no se recicla</a></p>
+</section>
 
 <section class="card filter-card" aria-label="Filtrar puntos de reciclaje">
 <div class="card-body">
@@ -57,6 +70,8 @@
 <p class="alert alert-info" role="status">{% if material_id %}No hay puntos activos que acepten el material seleccionado.{% else %}No hay puntos de reciclaje activos disponibles.{% endif %}</p>
 {% endif %}
 
+<p class="demo-note">{{ icon('escudo') }} Los puntos identificados como demostración contienen ubicaciones, horarios y estados ilustrativos; no son información oficial.</p>
+
 <div class="row g-4 public-layout">
 <div class="col-12 col-xl-8 public-map-column">
 <section class="card map-card" aria-labelledby="mapa-titulo">
@@ -73,7 +88,7 @@
 <script id="datos-mapa-publico" type="application/json">{{ puntos_mapa|tojson }}</script>
 
 <div class="col-12 col-xl-4 public-points-column">
-<div class="point-list-heading"><h2 class="h5 mb-0">Puntos de reciclaje</h2><span class="badge material-badge" aria-label="{{ puntos|length }} resultados">{{ puntos|length }}</span></div>
+<div class="point-list-heading"><h2 class="h5 mb-0">Puntos de reciclaje</h2><span class="badge counter-badge" aria-label="{{ puntos|length }} resultados">{{ puntos|length }}</span></div>
 <div class="point-list">
 {% for punto in puntos %}
     <div>
@@ -106,7 +121,7 @@
                     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2"><strong class="small">{{ contenedor.codigo }}</strong><span class="badge status-badge {{ {'Disponible': 'state-disponible', 'Medio': 'state-medio', 'Casi lleno': 'state-casi', 'Lleno': 'state-lleno'}.get(contenedor.estado, 'state-neutral') }}" data-campo="estado">{{ contenedor.estado }}</span></div>
                     <p class="small mb-2">Llenado: <strong data-campo="porcentaje">{% if contenedor.porcentaje_llenado is not none %}{{ contenedor.porcentaje_llenado|round(1) }}%{% else %}Sin datos{% endif %}</strong></p>
                     {{ progress(contenedor.porcentaje_llenado, contenedor.estado) }}
-                    <p class="small text-secondary mt-2 mb-0 container-update">Última actualización: <span data-campo="fecha">{% if contenedor.ultima_actualizacion %}{{ contenedor.ultima_actualizacion.strftime('%d/%m/%Y %H:%M') }}{% else %}Sin actualización registrada{% endif %}</span></p>
+                    <p class="small text-secondary mt-2 mb-0 container-update">Última actualización: <span data-campo="fecha">{% if contenedor.ultima_actualizacion %}{{ contenedor.ultima_actualizacion|fecha_chile }}{% else %}Sin actualización registrada{% endif %}</span></p>
                 </div>
                 {% else %}<p>Sin contenedores activos registrados.</p>{% endfor %}
             </div>
@@ -115,9 +130,138 @@
 {% endfor %}
 </div>
 </div></div>
+
+<section id="aprendamos" class="learn-section" aria-labelledby="aprendamos-titulo">
+    <header class="section-heading">
+        <p class="eyebrow">Aprendamos a reciclar</p>
+        <h2 id="aprendamos-titulo">Qué se recicla en Valdivia y cómo prepararlo</h2>
+        <p class="section-lead">Separar bien es lo que permite que un envase vuelva a ser un envase. Estos son los residuos que sí se reciclan y los que nunca deberían llegar al punto limpio.</p>
+    </header>
+
+    <ol class="steps-grid">
+        <li class="step-card">
+            <span class="step-number">01</span>
+            <span class="step-icon">{{ icon('gota') }}</span>
+            <h3>Enjuaga</h3>
+            <p>Quita los restos de comida o líquido. Un solo envase sucio arruina el contenido de todo el contenedor.</p>
+        </li>
+        <li class="step-card">
+            <span class="step-number">02</span>
+            <span class="step-icon">{{ icon('sol') }}</span>
+            <h3>Seca y aplasta</h3>
+            <p>Deja escurrir, aplasta botellas y latas con la tapa puesta: ocupan menos espacio y se transportan mejor.</p>
+        </li>
+        <li class="step-card">
+            <span class="step-number">03</span>
+            <span class="step-icon">{{ icon('ubicacion') }}</span>
+            <h3>Lleva al punto limpio</h3>
+            <p>Deposita cada material en el contenedor que corresponde. En el mapa puedes revisar materiales y estado.</p>
+        </li>
+    </ol>
+
+    <div class="learn-columns">
+        <section class="learn-panel learn-panel--yes" aria-labelledby="si-reciclar">
+            <header class="learn-panel-head">
+                <span class="learn-panel-badge">{{ icon('check') }}</span>
+                <h3 id="si-reciclar">Sí se recicla</h3>
+                <p>Envases y embalajes que vuelven a la cadena de valor.</p>
+            </header>
+            <ul class="learn-items">
+                <li>
+                    <span class="learn-icon">{{ icon('papel') }}</span>
+                    <div><h4>Papel y cartón</h4><p>Cajas, diarios, revistas, folletos y bolsas de papel. Deben ir limpios, secos y plegados.</p></div>
+                </li>
+                <li>
+                    <span class="learn-icon">{{ icon('botella') }}</span>
+                    <div><h4>Botellas plásticas PET</h4><p>Envases de bebidas, jugos y agua. Enjuaga, aplasta y deja la tapa puesta: la tapa también se recicla.</p></div>
+                </li>
+                <li>
+                    <span class="learn-icon">{{ icon('bolsa') }}</span>
+                    <div><h4>Plásticos rígidos y flexibles</h4><p>Botellas de detergente, potes de yogur, bandejas y bolsas limpias, sin restos ni líquidos.</p></div>
+                </li>
+                <li>
+                    <span class="learn-icon">{{ icon('tetra') }}</span>
+                    <div><h4>Cartones para líquidos</h4><p>Envases de leche, jugo y vino. Enjuaga, escurre bien y aplasta la caja desplegada.</p></div>
+                </li>
+                <li>
+                    <span class="learn-icon">{{ icon('lata') }}</span>
+                    <div><h4>Aluminio y hojalata</h4><p>Latas de bebidas y conservas. Enjuaga y aplasta con cuidado por los bordes cortantes.</p></div>
+                </li>
+                <li>
+                    <span class="learn-icon">{{ icon('vidrio') }}</span>
+                    <div><h4>Vidrio de envases</h4><p>Botellas y frascos, enjuagados y sin tapas ni corchos. Se reciclan infinitas veces sin perder calidad.</p></div>
+                </li>
+            </ul>
+        </section>
+
+        <section class="learn-panel learn-panel--no" aria-labelledby="no-reciclar">
+            <header class="learn-panel-head">
+                <span class="learn-panel-badge">{{ icon('cruz') }}</span>
+                <h3 id="no-reciclar">No se recicla</h3>
+                <p>Residuos que necesitan otra vía o el recolector domiciliario.</p>
+            </header>
+            <ul class="learn-items">
+                <li>
+                    <span class="learn-icon">{{ icon('organico') }}</span>
+                    <div><h4>Restos de comida y orgánicos</h4><p>Cáscaras, sobras y residuos de jardín: tienen su propia recolección y ensucian los envases.</p></div>
+                </li>
+                <li>
+                    <span class="learn-icon">{{ icon('sanitario') }}</span>
+                    <div><h4>Residuos sanitarios</h4><p>Pañales, toallas, mascarillas y guantes usados nunca van a un contenedor de reciclaje.</p></div>
+                </li>
+                <li>
+                    <span class="learn-icon">{{ icon('pila') }}</span>
+                    <div><h4>Pilas y baterías</h4><p>Contienen metales peligrosos y requieren un punto de acopio especial.</p></div>
+                </li>
+                <li>
+                    <span class="learn-icon">{{ icon('lampara') }}</span>
+                    <div><h4>Ampollas y tubos fluorescentes</h4><p>Son residuos peligrosos: deben entregarse en los puntos de acopio habilitados.</p></div>
+                </li>
+                <li>
+                    <span class="learn-icon">{{ icon('quimico') }}</span>
+                    <div><h4>Envases con químicos</h4><p>Pinturas, solventes, aceites y sus envases necesitan manejo especial, nunca reciclaje domiciliario.</p></div>
+                </li>
+                <li>
+                    <span class="learn-icon">{{ icon('ceramica') }}</span>
+                    <div><h4>Loza, cerámica y espejos</h4><p>Su composición impide fundirlos junto con el vidrio de envases.</p></div>
+                </li>
+                <li>
+                    <span class="learn-icon">{{ icon('tacho') }}</span>
+                    <div><h4>Bolsas con residuos mezclados</h4><p>Si va todo junto, no se recupera nada. Separa por material antes de llevar tus envases.</p></div>
+                </li>
+            </ul>
+        </section>
+    </div>
+
+    <p class="learn-footnote">{{ icon('escudo') }} Material informativo basado en la Ley REP de envases y embalajes. Ante dudas sobre tu comuna, revisa las instrucciones del contenedor o consulta al equipo operacional.</p>
+</section>
+
+<section id="materiales-aceptados" class="accepted-section" aria-labelledby="aceptados-titulo">
+    <header class="section-heading section-heading--compact">
+        <p class="eyebrow">En nuestros puntos</p>
+        <h2 id="aceptados-titulo">Materiales aceptados hoy</h2>
+        <p class="section-lead">Estos son los materiales registrados en los puntos de EcoValdivia. Filtra el mapa para encontrar el más cercano a tu casa.</p>
+    </header>
+    <ul class="accepted-grid">
+        {% for material in materiales %}
+        <li class="accepted-card">
+            <span class="accepted-icon">{{ icono_material(material.nombre) }}</span>
+            <div>
+                <h3>{{ material.nombre }}</h3>
+                <p>{% if material.instrucciones %}{{ material.instrucciones }}{% else %}Consulta las indicaciones del punto más cercano.{% endif %}</p>
+            </div>
+        </li>
+        {% else %}
+        <li class="accepted-card">
+            <span class="accepted-icon">{{ icon('reciclar') }}</span>
+            <div><h3>Sin materiales registrados</h3><p>Aún no hay materiales asociados a los puntos activos.</p></div>
+        </li>
+        {% endfor %}
+    </ul>
+</section>
 {% endblock %}
 
 {% block scripts_extra %}
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous" defer></script>
+<script src="{{ url_for('static', filename='vendor/leaflet/leaflet.js') }}" defer></script>
 <script src="{{ url_for('static', filename='js/mapa_publico.js') }}" defer></script>
 {% endblock %}

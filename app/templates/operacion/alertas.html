@@ -2,31 +2,51 @@
 {% from '_visual.html' import icon, badge, progress %}
 {% block title %}Alertas · EcoValdivia{% endblock %}
 {% block content %}
-<div class="page-heading"><div><p class="eyebrow mb-2">Seguimiento operacional</p><h1>Alertas de llenado</h1><p>Prioriza los contenedores que necesitan atención. Alertas activas primero; fechas en UTC.</p></div>
+<div class="page-heading"><div><p class="eyebrow mb-2">Seguimiento operacional</p><h1>Alertas de llenado</h1><p>Prioriza los contenedores que necesitan atención. Alertas activas primero; fechas en hora local de Chile.</p></div>
 <a class="btn btn-outline-success" href="{{ url_for('operacion.historial') }}">{{ icon('reloj') }} Historial operacional</a></div>
+<div class="alert-summary {{ 'alert-summary-active' if total_activas else '' }} mb-3" role="status">
+    {{ icon('alerta') }} <strong>{{ total_activas }} {{ 'alerta activa' if total_activas == 1 else 'alertas activas' }}</strong>
+    <span>{{ 'Requieren atención del equipo. Registra el vaciado para cerrarlas.' if total_activas else 'No hay alertas activas pendientes.' }}</span>
+</div>
+<nav class="d-flex flex-wrap gap-2 mb-3" aria-label="Filtrar alertas">
+    <a class="btn {{ 'btn-success' if filtro == 'activas' else 'btn-outline-success' }}" href="{{ url_for('operacion.alertas', estado='activas') }}" {% if filtro == 'activas' %}aria-current="page"{% endif %}>Solo activas ({{ total_activas }})</a>
+    <a class="btn {{ 'btn-success' if filtro == 'todas' else 'btn-outline-success' }}" href="{{ url_for('operacion.alertas') }}" {% if filtro == 'todas' %}aria-current="page"{% endif %}>Todas las alertas</a>
+</nav>
 <div class="card table-card"><div class="table-responsive">
-<table class="table table-striped"><caption class="visually-hidden">Alertas de llenado y acciones de vaciado</caption>
-<thead><tr><th>Contenedor</th><th>Punto</th><th>Porcentaje actual</th><th>Estado actual</th><th>Alerta</th><th>Creada</th><th>Situación</th><th>Acción</th></tr></thead>
+<table class="table table-striped align-middle alertas-table"><caption class="visually-hidden">Alertas de llenado y acciones de vaciado</caption>
+<thead><tr><th>Contenedor y punto</th><th>Llenado actual</th><th>Mensaje de la alerta</th><th>Fechas</th><th>Situación</th><th>Acción</th></tr></thead>
 <tbody>
 {% for alerta in pagina.items %}
 <tr class="{{ 'alert-active' if alerta.activa else '' }}">
-    <td>{{ alerta.contenedor.codigo }}</td><td>{{ alerta.contenedor.punto.nombre }}</td>
-    <td>{% if alerta.contenedor.porcentaje_llenado is not none %}{{ '%.1f'|format(alerta.contenedor.porcentaje_llenado) }}%{% else %}Pendiente de lectura{% endif %}{{ progress(alerta.contenedor.porcentaje_llenado, alerta.contenedor.estado) }}</td>
-    <td>{{ badge(alerta.contenedor.estado) }}</td><td class="alert-message">{{ alerta.mensaje }}</td>
-    <td>{{ alerta.creada_en.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-    <td>{% if alerta.activa %}<span class="badge status-badge state-lleno">Activa</span>{% else %}<span class="badge status-badge state-neutral">Cerrada</span><span class="d-block small text-secondary mt-1">{{ alerta.cerrada_en.strftime('%Y-%m-%d %H:%M:%S') if alerta.cerrada_en else '' }}</span>{% endif %}</td>
+    <td>
+        <strong>{{ alerta.contenedor.codigo }}</strong>
+        <span class="d-block small text-secondary">{{ alerta.contenedor.punto.nombre }}</span>
+    </td>
+    <td class="cell-llenado">
+        {% if alerta.contenedor.porcentaje_llenado is not none %}
+        <span class="d-block fw-semibold">{{ '%.1f'|format(alerta.contenedor.porcentaje_llenado) }}%</span>
+        {{ progress(alerta.contenedor.porcentaje_llenado, alerta.contenedor.estado) }}
+        {% else %}<span class="small text-secondary">Pendiente de lectura</span>{% endif %}
+        <span class="d-inline-block mt-2">{{ badge(alerta.contenedor.estado) }}</span>
+    </td>
+    <td class="alert-message cell-mensaje">{{ alerta.mensaje }}</td>
+    <td class="cell-fechas">
+        <span class="d-block">Creada: {{ alerta.creada_en|fecha_chile }}</span>
+        {% if not alerta.activa %}<span class="d-block text-secondary">Cerrada: {{ alerta.cerrada_en|fecha_chile }}</span>{% endif %}
+    </td>
+    <td>{% if alerta.activa %}<span class="badge status-badge state-lleno">Activa</span>{% else %}<span class="badge status-badge state-neutral">Cerrada</span>{% endif %}</td>
     <td class="action-cell">{% if alerta.activa %}
         <form method="post" action="{{ url_for('operacion.vaciado', contenedor_id=alerta.contenedor_id) }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button class="btn btn-success btn-sm">Registrar vaciado</button>
         </form>
-    {% endif %}</td>
+    {% else %}<span class="small text-secondary">Sin acciones pendientes</span>{% endif %}</td>
 </tr>
-{% else %}<tr><td colspan="8">No hay alertas registradas.</td></tr>{% endfor %}
+{% else %}<tr><td colspan="6">{{ 'No hay alertas activas pendientes.' if filtro == 'activas' else 'No hay alertas registradas.' }}</td></tr>{% endfor %}
 </tbody></table></div></div>
 <div class="pagination-links">
-{% if pagina.has_prev %}<a href="{{ url_for('operacion.alertas', page=pagina.prev_num) }}">Anterior</a>{% endif %}
-{% if pagina.has_next %}<a href="{{ url_for('operacion.alertas', page=pagina.next_num) }}">Siguiente</a>{% endif %}
+{% if pagina.has_prev %}<a href="{{ url_for('operacion.alertas', page=pagina.prev_num, estado=filtro) }}">Anterior</a>{% endif %}
+{% if pagina.has_next %}<a href="{{ url_for('operacion.alertas', page=pagina.next_num, estado=filtro) }}">Siguiente</a>{% endif %}
 </div>
 <h2 class="h5 mt-4 mb-3">Registrar vaciado de otro contenedor</h2>
 <ul class="list-group">

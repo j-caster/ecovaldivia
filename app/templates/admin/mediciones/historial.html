@@ -2,14 +2,14 @@
 {% block title %}Historial de mediciones · EcoValdivia{% endblock %}
 {% block content %}
 <div class="page-heading"><div><p class="eyebrow mb-2">Telemetría registrada</p><h1>Historial · {{ dispositivo.identificador }}</h1>
-<p>Contenedor: {{ dispositivo.contenedor.codigo }}. Fechas en UTC.</p></div>
+<p>Contenedor: {{ dispositivo.contenedor.codigo }}. Fechas en hora local de Chile.</p></div>
 <a class="btn btn-outline-success" href="{{ url_for('admin.simular_medicion') }}">Simular medición</a></div>
 <div class="card table-card"><div class="table-responsive">
 <table class="table table-striped"><caption class="visually-hidden">Historial de mediciones del contenedor</caption>
     <thead><tr><th>Fecha</th><th>Sensor 1 (cm)</th><th>Sensor 2 (cm)</th><th>Porcentaje</th><th>Estado</th><th>Modo</th><th>Compuerta</th><th>Fuente</th></tr></thead>
     <tbody>
     {% for medicion in pagina.items %}
-    <tr><td>{{ medicion.recibida_en.strftime('%Y-%m-%d %H:%M:%S') }}</td><td>{{ medicion.sensor1_cm }}</td><td>{{ medicion.sensor2_cm }}</td><td>{{ '%.2f'|format(medicion.porcentaje_llenado) }}%</td><td>{{ medicion.estado_calculado }}</td><td>{{ medicion.modo }}</td><td>{{ medicion.compuerta }}</td><td>{{ medicion.fuente }}</td></tr>
+    <tr><td>{{ medicion.recibida_en|fecha_chile }}</td><td>{{ medicion.sensor1_cm }}</td><td>{{ medicion.sensor2_cm }}</td><td>{{ '%.2f'|format(medicion.porcentaje_llenado) }}%</td><td>{{ medicion.estado_calculado }}</td><td>{{ medicion.modo }}</td><td>{{ medicion.compuerta }}</td><td>{{ medicion.fuente }}</td></tr>
     {% else %}<tr><td colspan="8">No hay mediciones registradas.</td></tr>{% endfor %}
     </tbody>
 </table>

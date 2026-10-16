@@ -44,6 +44,12 @@ def index():
     )
 
 
+@public_bp.get("/salud")
+def salud():
+    """Comprobación de vida para el hosting: no consulta la base de datos."""
+    return jsonify(estado="ok")
+
+
 @public_bp.get("/public/datos")
 def datos():
     puntos, _, _, _ = consultar_puntos_publicos()

@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% from 'admin/_forms.html' import csrf, campo %}
+{% block title %}{{ 'Editar usuario' if usuario else 'Crear usuario' }} · EcoValdivia{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow mb-2">Administración de usuarios</p><h1>{{ 'Editar usuario' if usuario else 'Crear usuario' }}</h1></div></div>
+<div class="card col-lg-8"><div class="card-body"><form method="post">
+{{ csrf() }}
+{{ campo('nombre', 'Nombre', datos, limite=150) }}
+{{ campo('username', 'Username', datos, limite=100) }}
+<div class="mb-3"><label class="form-label" for="rol">Rol</label><select class="form-select" id="rol" name="rol" required>{% for rol in ['operador', 'administrador'] %}<option value="{{ rol }}" {{ 'selected' if datos.get('rol') == rol else '' }}>{{ rol|capitalize }}</option>{% endfor %}</select></div>
+<div class="form-check mb-3"><input class="form-check-input" type="checkbox" id="activo" name="activo" value="1" {{ 'checked' if datos.get('activo') == '1' else '' }}><label class="form-check-label" for="activo">Cuenta activa</label></div>
+{% if usuario %}<p class="text-muted" id="password-ayuda">Deja ambos campos de contraseña vacíos para conservar la contraseña actual.</p>{% else %}<p class="text-muted" id="password-ayuda">La contraseña debe tener entre 8 y 128 caracteres.</p>{% endif %}
+{% for campo_password, etiqueta in [('password', 'Nueva contraseña'), ('password_confirmacion', 'Confirmar contraseña')] %}<div class="mb-3"><label class="form-label" for="{{ campo_password }}">{{ etiqueta }}</label><input class="form-control" id="{{ campo_password }}" name="{{ campo_password }}" type="password" autocomplete="new-password" minlength="8" maxlength="128" aria-describedby="password-ayuda" {% if not usuario %}required{% endif %}></div>{% endfor %}
+<button class="btn btn-success" type="submit">Guardar usuario</button>
+<a class="btn btn-outline-secondary" href="{{ url_for('admin.usuarios') }}">Volver</a>
+</form></div></div>
+{% endblock %}

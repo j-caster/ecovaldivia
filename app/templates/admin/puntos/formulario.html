@@ -53,5 +53,64 @@
     {% else %}<li class="list-group-item">Sin horarios registrados.</li>{% endfor %}
     </ul>
 </section>
+<section class="mt-4 mb-4" aria-labelledby="contenedores-titulo">
+    <h2 id="contenedores-titulo" class="h4">Contenedores y dispositivos IoT</h2>
+    <p class="text-secondary">Un punto puede tener varios contenedores: por ejemplo uno para vidrio, otro para cartón y otro para latas. Cada contenedor se vincula a un dispositivo con identificador único, que es el que envía las lecturas reales o la simulación.</p>
+    {% if punto.contenedores %}
+    <ul class="list-group mb-3">
+    {% for contenedor in punto.contenedores|sort(attribute='codigo') %}
+        <li class="list-group-item">
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+                <div>
+                    <strong>{{ contenedor.codigo }}</strong>
+                    <span class="badge material-badge ms-1">{{ contenedor.material.nombre if contenedor.material else 'Sin material' }}</span>
+                    <span class="badge status-badge {{ 'state-disponible' if contenedor.activo else 'state-neutral' }} ms-1">{{ 'Activo' if contenedor.activo else 'Inactivo' }}</span>
+                    <p class="small text-secondary mb-0 mt-2">
+                        Dispositivo:
+                        {% if contenedor.dispositivo_activo %}<code>{{ contenedor.dispositivo_activo.identificador }}</code>
+                        {% elif contenedor.dispositivos %}sin dispositivo activo
+                        {% else %}sin dispositivo vinculado{% endif %}
+                        · Última lectura: {{ contenedor.ultima_actualizacion|fecha_chile }}
+                    </p>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <a class="btn btn-outline-success btn-sm" href="{{ url_for('admin.contenedor_formulario', contenedor_id=contenedor.id) }}">Editar</a>
+                    {% if contenedor.dispositivo_activo %}
+                    <a class="btn btn-outline-success btn-sm" href="{{ url_for('admin.simular_medicion', dispositivo=contenedor.dispositivo_activo.id) }}">Simular medición</a>
+                    {% endif %}
+                    <form method="post" action="{{ url_for('admin.contenedor_estado', contenedor_id=contenedor.id) }}">
+                        {{ csrf() }}<button class="btn btn-outline-danger btn-sm" type="submit">{{ 'Desactivar' if contenedor.activo else 'Activar' }}</button>
+                    </form>
+                </div>
+            </div>
+        </li>
+    {% endfor %}
+    </ul>
+    {% else %}
+    <p class="alert alert-info">Este punto todavía no tiene contenedores ni dispositivos asociados.</p>
+    {% endif %}
+    <form method="post" action="{{ url_for('admin.crear_contenedor', punto_id=punto.id) }}" class="row g-3 align-items-end">
+        {{ csrf() }}
+        <div class="col-md-4">
+            <label class="form-label" for="codigo_contenedor">Código del contenedor</label>
+            <input class="form-control" id="codigo_contenedor" name="codigo" maxlength="100" required placeholder="CONT-TEJA-VIDRIO-01">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="contenedor_material_id">Material que recibe</label>
+            <select class="form-select" id="contenedor_material_id" name="material_id">
+                <option value="">Sin material asignado</option>
+                {% for material in materiales %}<option value="{{ material.id }}">{{ material.nombre }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="identificador">Identificador del dispositivo IoT</label>
+            <input class="form-control" id="identificador" name="identificador" maxlength="100" required placeholder="ECO-TEJA-VIDRIO-01">
+        </div>
+        <div class="col-12">
+            <p class="form-text mt-0">El identificador debe ser único en todo el sistema: es el ID que enviará el equipo o la simulación. También puedes revisar los <a href="{{ url_for('admin.materiales') }}">materiales registrados</a>.</p>
+            <button class="btn btn-success" type="submit">Agregar contenedor y vincular dispositivo</button>
+        </div>
+    </form>
+</section>
 {% endif %}
 {% endblock %}

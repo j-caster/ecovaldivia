@@ -1,10 +1,12 @@
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from flask_login import current_user
 
 from app.extensions import db
-from app.models import DispositivoIoT, Medicion, Horario, Material, PuntoMaterial, PuntoReciclaje
+from app.models import Contenedor, DispositivoIoT, Medicion, Horario, Material, PuntoMaterial, PuntoReciclaje, Usuario
+from app.services.usuario_service import validar_usuario
 from app.services.medicion_service import COMPUERTAS, MODOS, procesar_medicion
-from app.services.admin_validation import validar_horario, validar_horarios_creacion, validar_material, validar_punto
+from app.services.admin_validation import validar_contenedor, validar_horario, validar_horarios_creacion, validar_material, validar_punto
 from app.services.security import roles_required, validar_csrf
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
@@ -39,6 +41,40 @@ def index():
     return render_template("admin.html")
 
 
+@admin_bp.get("/usuarios")
+def usuarios():
+    registros = db.session.scalars(db.select(Usuario).order_by(Usuario.nombre, Usuario.id)).all()
+    return render_template("admin/usuarios/lista.html", usuarios=registros)
+
+
+@admin_bp.route("/usuarios/nuevo", methods=["GET", "POST"])
+@admin_bp.route("/usuarios/<int:usuario_id>/editar", methods=["GET", "POST"])
+def usuario_formulario(usuario_id=None):
+    usuario = db.get_or_404(Usuario, usuario_id) if usuario_id else None
+    if request.method == "POST":
+        # Las contraseñas nunca se devuelven en el formulario.
+        datos = {k: request.form.get(k, "") for k in ("nombre", "username", "rol", "activo")}
+        try:
+            valores, password = validar_usuario(request.form, usuario, current_user.id)
+        except ValueError as error:
+            flash(str(error), "danger")
+        else:
+            nuevo = usuario is None
+            if nuevo:
+                usuario = Usuario()
+                db.session.add(usuario)
+            for campo, valor in valores.items():
+                setattr(usuario, campo, valor)
+            if password:
+                usuario.establecer_password(password)
+            if guardar("Usuario creado." if nuevo else "Usuario modificado."):
+                return redirect(url_for("admin.usuarios"))
+    else:
+        datos = {"nombre": usuario.nombre, "username": usuario.username, "rol": usuario.rol,
+                 "activo": "1" if usuario.activo else ""} if usuario else {"rol": "operador", "activo": "1"}
+    return render_template("admin/usuarios/formulario.html", usuario=usuario, datos=datos)
+
+
 @admin_bp.route("/mediciones/simular", methods=["GET", "POST"])
 def simular_medicion():
     datos = request.form if request.method == "POST" else {}
@@ -61,9 +97,14 @@ def simular_medicion():
                   else "Lectura procesada; estado actualizado sin nueva fila de historial.", "success")
             return redirect(url_for("admin.historial_mediciones", dispositivo_id=medicion.dispositivo_id))
     dispositivos = db.session.scalars(db.select(DispositivoIoT).where(
-        DispositivoIoT.activo.is_(True)).order_by(DispositivoIoT.identificador)).all()
+        DispositivoIoT.activo.is_(True)).join(DispositivoIoT.contenedor).join(
+        Contenedor.punto).order_by(
+        PuntoReciclaje.nombre, Contenedor.codigo, DispositivoIoT.identificador)).all()
+    # Permite llegar desde la edición de un punto con el dispositivo ya elegido.
+    preseleccionado = request.args.get("dispositivo", type=int)
     return render_template("admin/mediciones/simular.html", datos=datos,
-                           dispositivos=dispositivos, modos=MODOS, compuertas=COMPUERTAS)
+                           dispositivos=dispositivos, modos=MODOS, compuertas=COMPUERTAS,
+                           preseleccionado=preseleccionado)
 
 
 @admin_bp.get("/dispositivos/<int:dispositivo_id>/mediciones")
@@ -113,6 +154,89 @@ def punto_estado(punto_id):
     punto.activo = not punto.activo
     guardar("Punto activado." if punto.activo else "Punto desactivado.")
     return redirect(url_for("admin.puntos"))
+
+
+def _codigo_ocupado(codigo, contenedor_id=None):
+    consulta = db.select(Contenedor).where(Contenedor.codigo == codigo)
+    if contenedor_id is not None:
+        consulta = consulta.where(Contenedor.id != contenedor_id)
+    return db.session.scalar(consulta) is not None
+
+
+def _identificador_ocupado(identificador, dispositivo_id=None):
+    consulta = db.select(DispositivoIoT).where(DispositivoIoT.identificador == identificador)
+    if dispositivo_id is not None:
+        consulta = consulta.where(DispositivoIoT.id != dispositivo_id)
+    return db.session.scalar(consulta) is not None
+
+
+@admin_bp.post("/puntos/<int:punto_id>/contenedores")
+def crear_contenedor(punto_id):
+    """Crear un contenedor y su dispositivo IoT desde la edición del punto."""
+    punto = db.get_or_404(PuntoReciclaje, punto_id)
+    try:
+        valores = validar_contenedor(request.form)
+    except ValueError as error:
+        flash(str(error), "danger")
+        return redirect(url_for("admin.punto_formulario", punto_id=punto.id))
+    identificador = valores.pop("identificador")
+    if _codigo_ocupado(valores["codigo"]):
+        flash("Ya existe un contenedor con ese código.", "danger")
+    elif _identificador_ocupado(identificador):
+        flash("Ya existe un dispositivo con ese identificador.", "danger")
+    else:
+        contenedor = Contenedor(punto_id=punto.id, **valores)
+        db.session.add(contenedor)
+        try:
+            # Necesario para conocer el id del contenedor antes de crear el dispositivo.
+            db.session.flush()
+        except SQLAlchemyError:
+            db.session.rollback()
+            flash("No se pudo crear el contenedor. Intenta nuevamente.", "danger")
+        else:
+            db.session.add(DispositivoIoT(
+                identificador=identificador, contenedor_id=contenedor.id, activo=True))
+            guardar(f"Contenedor {contenedor.codigo} creado y vinculado al dispositivo {identificador}.")
+    return redirect(url_for("admin.punto_formulario", punto_id=punto.id))
+
+
+@admin_bp.route("/contenedores/<int:contenedor_id>/editar", methods=["GET", "POST"])
+def contenedor_formulario(contenedor_id):
+    """Editar el contenedor y el dispositivo IoT activo que lo reporta."""
+    contenedor = db.get_or_404(Contenedor, contenedor_id)
+    dispositivo = contenedor.dispositivo_activo
+    if request.method == "POST":
+        try:
+            valores = validar_contenedor(request.form)
+        except ValueError as error:
+            flash(str(error), "danger")
+        else:
+            identificador = valores.pop("identificador")
+            if _codigo_ocupado(valores["codigo"], contenedor.id):
+                flash("Ya existe otro contenedor con ese código.", "danger")
+            elif _identificador_ocupado(identificador, dispositivo.id if dispositivo else None):
+                flash("Ya existe otro dispositivo con ese identificador.", "danger")
+            else:
+                for campo, valor in valores.items():
+                    setattr(contenedor, campo, valor)
+                if dispositivo is None:
+                    dispositivo = DispositivoIoT(contenedor_id=contenedor.id)
+                    db.session.add(dispositivo)
+                dispositivo.identificador = identificador
+                dispositivo.activo = request.form.get("dispositivo_activo") == "1"
+                if guardar("Contenedor actualizado."):
+                    return redirect(url_for("admin.punto_formulario", punto_id=contenedor.punto_id))
+    materiales = db.session.scalars(db.select(Material).order_by(Material.nombre)).all()
+    return render_template("admin/contenedores/formulario.html", contenedor=contenedor,
+                           dispositivo=dispositivo, materiales=materiales)
+
+
+@admin_bp.post("/contenedores/<int:contenedor_id>/estado")
+def contenedor_estado(contenedor_id):
+    contenedor = db.get_or_404(Contenedor, contenedor_id)
+    contenedor.activo = not contenedor.activo
+    guardar("Contenedor activado." if contenedor.activo else "Contenedor desactivado.")
+    return redirect(url_for("admin.punto_formulario", punto_id=contenedor.punto_id))
 
 
 @admin_bp.get("/materiales")
