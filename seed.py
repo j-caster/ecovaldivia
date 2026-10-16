@@ -188,12 +188,39 @@ def cargar_datos():
     db.session.commit()
 
 
+# Dispositivos IoT vinculados a contenedores ya existentes. Solo se cargan al
+# iniciar la aplicación o al ejecutar python seed.py; cargar_datos() conserva
+# únicamente el dispositivo de demostración para no alterar las pruebas.
+DISPOSITIVOS = {
+    "CONT-SODIMAC-VIDRIO-01": "ECO-SODIMAC-VIDRIO-01",
+    "CONT-LATA-LATA01": "ECO-LATA-LATA-01",
+}
+
+
+def cargar_dispositivos():
+    """Vincular los dispositivos IoT a sus contenedores (idempotente)."""
+    for codigo_contenedor, identificador in DISPOSITIVOS.items():
+        contenedor = db.session.scalar(
+            db.select(Contenedor).where(Contenedor.codigo == codigo_contenedor))
+        if contenedor is None:
+            continue
+        dispositivo = db.session.scalar(
+            db.select(DispositivoIoT).where(DispositivoIoT.identificador == identificador))
+        if dispositivo is None:
+            db.session.add(DispositivoIoT(
+                identificador=identificador, contenedor_id=contenedor.id, activo=True,
+                modo_actual="AUTO", compuerta_actual="ABIERTA",
+            ))
+    db.session.commit()
+
+
 if __name__ == "__main__":
     app = create_app()
     with app.app_context():
         db.create_all()
         try:
             cargar_datos()
+            cargar_dispositivos()
         except Exception:
             db.session.rollback()
             raise

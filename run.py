@@ -22,6 +22,8 @@ def _inicializar():
         db.create_all()
         from seed import cargar_datos  # import tardío: no ejecuta el main de seed.py
         cargar_datos()
+        from seed import cargar_dispositivos
+        cargar_dispositivos()
 
 
 for intento in range(10):
