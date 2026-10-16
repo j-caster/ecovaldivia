@@ -1,4 +1,4 @@
-"""Carga idempotente de datos de demostración para desarrollo."""
+"""Carga idempotente de datos iniciales: materiales, puntos, horarios y contenedores."""
 
 from datetime import datetime, time
 
@@ -13,30 +13,99 @@ MATERIALES = {
     "Vidrio": "Enjuaga los envases y retira tapas y corchos.",
     "Latas de aluminio": "Enjuaga las latas, sécalas y aplástalas.",
     "Tetra Pak": "Enjuaga los envases, escúrrelos y aplástalos.",
+    "Laton": "Material de laton como latas de atun, sardinas, tarros de cafe.",
+    "Plásticos Tipo 2 (ADPE)": (
+        "Polietileno de Alta densidad , es un plástico rígido , resisten a impactos y a químicos. \n"
+        "Ejemplo:\n"
+        "-Envase de Limpiezas (Detergentes liquido, lavalozas y limpia pisos)\n"
+        "-Cuidado Personal (Botellas de Champú, Acondicionador, jabón liquido y cremas)\n"
+        "-Tapas plásticas \n"
+        "-Lácteos (Botellas blancas u opacas de leche , yogurt liquido)"
+    ),
 }
 
-# Ubicaciones aproximadas e ilustrativas: no representan puntos oficiales.
+# Puntos de reciclaje registrados en la base del proyecto. Cada punto declara sus
+# materiales, horarios (lunes = 0 ... domingo = 6) y contenedores.
 PUNTOS = [
     {
         "nombre": "Demostración — Centro de Valdivia",
         "direccion": "Sector centro, Valdivia (ubicación de demostración)",
         "latitud": -39.8142, "longitud": -73.2459,
         "materiales": ["Plástico PET", "Cartón", "Latas de aluminio"],
-        "codigo": "DEMO-CENTRO-01", "estado": "Disponible", "porcentaje": 20,
+        "horarios": [(0, "09:00", "18:00"), (1, "09:00", "18:00"), (2, "09:00", "18:00"),
+                     (3, "09:00", "18:00"), (4, "09:00", "18:00")],
+        "contenedores": [{"codigo": "DEMO-CENTRO-01", "estado": "Disponible", "porcentaje": 20, "material": None}],
     },
     {
         "nombre": "Demostración — Isla Teja",
         "direccion": "Sector Isla Teja, Valdivia (ubicación de demostración)",
         "latitud": -39.8067, "longitud": -73.2600,
         "materiales": ["Vidrio", "Cartón"],
-        "codigo": "DEMO-TEJA-01", "estado": "Medio", "porcentaje": 55,
+        "horarios": [(0, "09:00", "18:00"), (1, "09:00", "18:00"), (2, "09:00", "18:00"),
+                     (3, "09:00", "18:00"), (4, "09:00", "18:00")],
+        "contenedores": [{"codigo": "DEMO-TEJA-01", "estado": "Medio", "porcentaje": 55, "material": None}],
     },
     {
         "nombre": "Demostración — Las Ánimas",
         "direccion": "Sector Las Ánimas, Valdivia (ubicación de demostración)",
         "latitud": -39.8000, "longitud": -73.2300,
         "materiales": ["Plástico PET", "Tetra Pak", "Latas de aluminio"],
-        "codigo": "DEMO-ANIMAS-01", "estado": "Casi lleno", "porcentaje": 90,
+        "horarios": [(0, "09:00", "18:00"), (1, "09:00", "18:00"), (2, "09:00", "18:00"),
+                     (3, "09:00", "18:00"), (4, "09:00", "18:00")],
+        "contenedores": [{"codigo": "DEMO-ANIMAS-01", "estado": "Casi lleno", "porcentaje": 90, "material": None}],
+    },
+    {
+        "nombre": "Contenedor de Latas",
+        "direccion": "Bombero Hernandez 143",
+        "latitud": -39.8136, "longitud": -73.2269,
+        "materiales": ["Laton"],
+        "horarios": [(0, "09:00", "20:00")],
+        "contenedores": [{"codigo": "CONT-LATA-LATA01", "estado": "Casi lleno", "porcentaje": 86.67, "material": "Laton"}],
+    },
+    {
+        "nombre": "Sector Sodimac",
+        "direccion": "Alonso Villanuevas 145",
+        "latitud": -39.8329, "longitud": -73.2201,
+        "materiales": ["Vidrio"],
+        "horarios": [(6, "09:00", "20:00")],
+        "contenedores": [{"codigo": "CONT-SODIMAC-VIDRIO-01", "estado": "Casi lleno", "porcentaje": 100, "material": "Vidrio"}],
+    },
+    {
+        "nombre": "Latas de aluminio",
+        "direccion": "Avenida Argentina Pasaje Bonifacio",
+        "latitud": -39.819588, "longitud": -73.245209,
+        "materiales": ["Cartón", "Latas de aluminio"],
+        "horarios": [(0, "09:00", "20:00"), (1, "09:00", "20:00"), (2, "09:00", "20:00"),
+                     (3, "09:00", "20:00")],
+        "contenedores": [],
+    },
+    {
+        "nombre": "Parque Guillermo  Harnecker",
+        "direccion": "Avenida Pedro Montt #779, Valdivia, Los Rios",
+        "latitud": -39.820102, "longitud": -73.235199,
+        "materiales": ["Plástico PET", "Cartón", "Latas de aluminio", "Laton", "Plásticos Tipo 2 (ADPE)"],
+        "horarios": [(0, "08:00", "21:00"), (1, "08:00", "21:00"), (2, "08:00", "21:00"),
+                     (3, "08:00", "21:00"), (4, "08:00", "21:00")],
+        "contenedores": [],
+    },
+    {
+        "nombre": "Parque Krahmer",
+        "direccion": "Rodolfo Beckdorf 1657, Valdivia, Los Ríos",
+        "latitud": -39.8302432408177, "longitud": -73.2281215754843,
+        "materiales": ["Plástico PET", "Vidrio"],
+        "horarios": [(0, "08:00", "20:00"), (1, "08:00", "20:00"), (2, "08:00", "20:00"),
+                     (3, "08:00", "20:00"), (4, "08:00", "20:00"), (5, "08:00", "20:00"),
+                     (6, "08:00", "20:00")],
+        "contenedores": [],
+    },
+    {
+        "nombre": "Parque Saval",
+        "direccion": "Parque Saval 1, Valdivia, Los Ríos",
+        "latitud": -39.80561942413646, "longitud": -73.25538357519324,
+        "materiales": ["Plástico PET", "Vidrio", "Latas de aluminio"],
+        "horarios": [(1, "08:00", "18:00"), (2, "08:00", "18:00"), (3, "08:00", "18:00"),
+                     (4, "08:00", "18:00"), (5, "08:00", "18:00"), (6, "08:00", "18:00")],
+        "contenedores": [],
     },
 ]
 
@@ -69,26 +138,33 @@ def cargar_datos():
             if db.session.get(PuntoMaterial, (punto.id, material.id)) is None:
                 db.session.add(PuntoMaterial(punto_id=punto.id, material_id=material.id))
 
-        for dia in range(5):
-            inicio, fin = time(9, 0), time(18, 0)
+        for dia, inicio, fin in datos.get("horarios", []):
+            hora_inicio, hora_fin = time.fromisoformat(inicio), time.fromisoformat(fin)
             horario = db.session.scalar(db.select(Horario).where(
                 Horario.punto_id == punto.id, Horario.dia_semana == dia,
-                Horario.hora_inicio == inicio, Horario.hora_fin == fin,
+                Horario.hora_inicio == hora_inicio, Horario.hora_fin == hora_fin,
             ))
             if horario is None:
                 db.session.add(Horario(
-                    punto_id=punto.id, dia_semana=dia, hora_inicio=inicio, hora_fin=fin,
+                    punto_id=punto.id, dia_semana=dia,
+                    hora_inicio=hora_inicio, hora_fin=hora_fin,
                 ))
 
-        contenedor = db.session.scalar(
-            db.select(Contenedor).where(Contenedor.codigo == datos["codigo"])
-        )
-        if contenedor is None:
-            db.session.add(Contenedor(
-                punto_id=punto.id, codigo=datos["codigo"], estado=datos["estado"],
-                porcentaje_llenado=datos["porcentaje"],
-                ultima_actualizacion=datetime.now(), activo=True,
-            ))
+        for datos_contenedor in datos.get("contenedores", []):
+            contenedor = db.session.scalar(
+                db.select(Contenedor).where(Contenedor.codigo == datos_contenedor["codigo"])
+            )
+            if contenedor is None:
+                material_id = None
+                if datos_contenedor.get("material"):
+                    material_id = materiales[datos_contenedor["material"]].id
+                db.session.add(Contenedor(
+                    punto_id=punto.id, codigo=datos_contenedor["codigo"],
+                    estado=datos_contenedor["estado"],
+                    porcentaje_llenado=datos_contenedor["porcentaje"],
+                    ultima_actualizacion=datetime.now(), activo=True,
+                    material_id=material_id,
+                ))
     db.session.flush()
     demo = db.session.scalar(db.select(DispositivoIoT).where(
         DispositivoIoT.identificador == "DEMO-IOT-01"))
@@ -121,4 +197,4 @@ if __name__ == "__main__":
         except Exception:
             db.session.rollback()
             raise
-    print("Datos de demostración cargados sin duplicados.")
+    print("Datos cargados sin duplicados.")

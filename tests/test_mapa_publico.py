@@ -55,7 +55,7 @@ class MapaPublicoTests(unittest.TestCase):
         self.assertIn("js/mapa_publico.js", html)
         self.assertLess(html.index('id="material"'), html.index('id="mapa-publico"'))
         self.assertLess(html.index('id="mapa-publico"'), html.index('class="card h-100"'))
-        self.assertEqual(len(puntos), 3)
+        self.assertEqual(len(puntos), 9)
 
     def test_activos_incluidos_inactivos_excluidos(self):
         punto = db.session.scalar(db.select(PuntoReciclaje))
@@ -80,7 +80,7 @@ class MapaPublicoTests(unittest.TestCase):
         self.assertEqual([p["punto_id"] for p in datos], [punto.id])
         self.assertIn(punto.nombre, html)
         for otro in db.session.scalars(db.select(PuntoReciclaje).where(PuntoReciclaje.id != punto.id)):
-            self.assertNotIn(otro.nombre, html)
+            self.assertNotIn(otro.direccion, html)
         for valor in ("abc", "999999"):
             _, vacios = self.respuesta(f"/?material={valor}")
             self.assertEqual(vacios, [])
@@ -137,7 +137,7 @@ class MapaPublicoTests(unittest.TestCase):
         self.assertEqual(respuesta.headers["Cache-Control"], "no-store")
         datos = respuesta.json["puntos"]
         self.assertNotIn(punto.id, {p["punto_id"] for p in datos})
-        self.assertEqual(len(datos), 2)
+        self.assertEqual(len(datos), 8)
         for p in datos:
             self.assertEqual(set(p), {"punto_id", "nombre", "direccion", "latitud", "longitud", "materiales", "contenedores"})
             for c in p["contenedores"]:
