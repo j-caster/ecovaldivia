@@ -237,16 +237,12 @@ En una base de demostración, abrir público y panel en ventanas separadas. Desd
 
 1. Subir el repositorio a GitHub.
 2. En Render: **New → Blueprint** y elegir el repositorio. Render lee `render.yaml`, instala `requirements.txt`, crea la base PostgreSQL y publica el servicio con certificado HTTPS automático.
-3. Con el servicio arriba, abrir la **Shell** de Render y cargar los datos iniciales una sola vez:
-
-```bash
-python seed.py
-```
+3. `run.py` crea las tablas y carga los datos de demostración al arrancar (idempotente), así que no hace falta Shell ni ejecutar `python seed.py` a mano: el sitio queda listo al terminar el primer despliegue.
 
 El Blueprint define `SECRET_KEY` (generada por Render, para que las sesiones sobrevivan a los reinicios), `SESSION_COOKIE_SECURE=1`, `DATABASE_URL` (tomada de la base PostgreSQL del propio Blueprint) y `PYTHON_VERSION`. Si se prefiere crear el servicio a mano, el comando de arranque es:
 
 ```bash
-gunicorn run:app --bind 0.0.0.0:$PORT --workers 2 --timeout 60
+gunicorn run:app --bind 0.0.0.0:$PORT --workers 1 --timeout 60
 ```
 
 Notas de operación:

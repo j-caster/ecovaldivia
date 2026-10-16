@@ -4,8 +4,8 @@
 # apuntar a este archivo. Render instala las dependencias, crea la base Postgres
 # y entrega HTTPS automático en https://<nombre>.onrender.com
 #
-# Después del primer despliegue hay que cargar los datos iniciales una sola vez
-# desde la Shell del servicio:  python seed.py
+# run.py crea las tablas y carga los datos de demostración al arrancar
+# (idempotente), por lo que no hace falta Shell ni ejecutar python seed.py a mano.
 services:
   - type: web
     name: ecovaldivia
@@ -13,7 +13,8 @@ services:
     plan: free
     region: oregon
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn run:app --bind 0.0.0.0:$PORT --workers 2 --timeout 60
+    # Un solo worker: la entrega no soporta workers concurrentes por dispositivo.
+    startCommand: gunicorn run:app --bind 0.0.0.0:$PORT --workers 1 --timeout 60
     # /salud no consulta la base: el servicio pasa el chequeo aunque todavía no
     # se hayan cargado datos (python seed.py se ejecuta después del despliegue).
     healthCheckPath: /salud
