@@ -32,3 +32,7 @@ class Config:
     # En producción con HTTPS: definir SESSION_COOKIE_SECURE=1 para que la cookie
     # de sesión viaje solo por conexiones cifradas.
     SESSION_COOKIE_SECURE = _booleano("SESSION_COOKIE_SECURE")
+    # El gateway UDP local envía telemetría validada a este endpoint HTTPS.
+    # Ambos valores se configuran por entorno; nunca se guardan en Git.
+    IOT_INGEST_TOKEN = os.environ.get("ECOV_IOT_INGEST_TOKEN", "")
+    IOT_INGEST_DEVICE_ID = os.environ.get("ECOV_IOT_INGEST_DEVICE_ID", "")
