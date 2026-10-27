@@ -21,9 +21,11 @@ def create_app(config_class=Config):
     from app.routes.auth import auth_bp
     from app.routes.admin import admin_bp
     from app.routes.operacion import operacion_bp
+    from app.routes.iot_api import iot_api_bp
 
     app.register_blueprint(public_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(operacion_bp)
+    app.register_blueprint(iot_api_bp)
     return app
