@@ -25,6 +25,19 @@
     </div></article></div>
 {% endfor %}
 </div>
+{% if camara %}
+<section class="card camera-card mb-4">
+    <div class="card-body">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <h2 class="h5 mb-1">{{ icon('camara') }} Cámara en vivo</h2>
+                <p class="small text-secondary mb-0">{{ camara.nombre }}</p>
+            </div>
+            <button class="btn btn-sm btn-lime btn-ver-camara" type="button" data-punto-id="{{ camara.punto_id }}">{{ icon('camara') }} Ver Cámara en Vivo</button>
+        </div>
+    </div>
+</section>
+{% endif %}
 {% set cantidad_alertas = contenedores|selectattr('alerta')|list|length %}
 <div id="panel-alertas-aviso" class="alert-summary {{ 'alert-summary-active' if cantidad_alertas else '' }} mb-4" role="status" aria-live="polite">
     {{ icon('alerta') }}
@@ -53,5 +66,21 @@
     </table>
     </div></div>
 </section>
+{% if camara %}
+<div id="modal-camara" class="camara-modal" hidden>
+    <div class="camara-modal-caja" role="dialog" aria-modal="true" aria-labelledby="camara-titulo">
+        <div class="camara-modal-cabecera">
+            <h2 id="camara-titulo" class="h5 mb-0">Cámara en vivo</h2>
+            <button id="btn-cerrar-camara" class="camara-modal-cerrar" type="button" aria-label="Cerrar">×</button>
+        </div>
+        <p id="camara-nombre" class="small text-secondary mb-2"></p>
+        <p id="error-camara" class="camara-error" role="alert"></p>
+        <div id="contenedor-camara" class="camara-contenedor"></div>
+    </div>
+</div>
+{% endif %}
 <script src="{{ url_for('static', filename='js/panel.js') }}" defer></script>
+{% if camara %}
+<script src="{{ url_for('static', filename='js/camara.js') }}" defer></script>
+{% endif %}
 {% endblock %}

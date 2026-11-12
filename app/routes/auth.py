@@ -3,8 +3,9 @@ from flask_login import current_user, login_user, logout_user
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from app.extensions import db, login_manager
-from app.models import Usuario
+from app.models import PuntoReciclaje, Usuario
 from app.services.security import roles_required, validar_csrf
+from app.services.camara_service import PUNTO_CON_CAMARA, camara_para_punto
 from app.services.panel_service import INTERVALO_PANEL_SEGUNDOS, datos_panel
 from app.services.fecha_service import fecha_chile
 
@@ -52,7 +53,11 @@ def logout():
 @auth_bp.get("/panel")
 @roles_required("operador", "administrador")
 def panel():
-    return render_template("panel.html", contenedores=datos_panel(),
+    punto_camara = db.session.scalar(
+        db.select(PuntoReciclaje).where(PuntoReciclaje.nombre == PUNTO_CON_CAMARA)
+    )
+    camara = camara_para_punto(punto_camara) if punto_camara else None
+    return render_template("panel.html", contenedores=datos_panel(), camara=camara,
                            intervalo_panel_ms=INTERVALO_PANEL_SEGUNDOS * 1000)
 
 
@@ -65,3 +70,18 @@ def panel_datos():
     respuesta = jsonify(contenedores=contenedores, fechas_locales=fechas_locales)
     respuesta.headers["Cache-Control"] = "no-store"
     return respuesta
+
+
+@auth_bp.get("/api/camara/<int:punto_id>")
+@roles_required("operador", "administrador")
+def camara(punto_id):
+    """Datos de la cámara en vivo de un punto, solo para operadores/admin."""
+    punto = db.session.get(PuntoReciclaje, punto_id)
+    if punto is None:
+        return jsonify(ok=False, error="punto_no_encontrado"), 404
+
+    datos_camara = camara_para_punto(punto)
+    if datos_camara is None:
+        return jsonify(ok=False, error="punto_sin_camara"), 404
+
+    return jsonify(ok=True, **datos_camara)
